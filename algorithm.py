@@ -80,3 +80,4 @@ class Agent(object):
 num_players = 2
 print(torch.randn(4))
 print("test")
+print("test2")
