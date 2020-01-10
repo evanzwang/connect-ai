@@ -73,10 +73,10 @@ class Agent(object):
         else:
             with torch.no_grad():
                 return policy_net(state).argmax(1).to(self.device)
-        
+
 
 # nice
 
 num_players = 2
 print(torch.randn(4))
-
+print("test")
