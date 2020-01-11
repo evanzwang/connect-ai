@@ -1,5 +1,6 @@
 import numpy as np
 
+
 # Represents the game board and contains several methods that can be run to play the game
 class Board:
     delta_list = np.array(
@@ -120,9 +121,9 @@ class Board:
 # Currently played in Connect-4 rules
 class ConnectEnv():
     # Initializes environment with the width, height, number of tiles needed to be in-a-row, and the number of players
-    def __init__(self, width, height, connect_num, player_num):
+    def __init__(self, width, height, connect_num, num_players):
         self.state = Board(width, height, connect_num)
-        self.player_num = player_num
+        self.num_players = num_players
         self.current_player = 0
         self.width = width
         self.height = height
@@ -131,7 +132,7 @@ class ConnectEnv():
     # Returns the state, reward, done, and info
     def step(self, action):
         move_status = self.state.make_move(action, self.current_player + 1)
-        self.current_player = (self.current_player + 1) % self.player_num
+        self.current_player = (self.current_player + 1) % self.num_players
 
         reward = 0
         done = False
@@ -161,7 +162,7 @@ class ConnectEnv():
     # Say if board[0,0] was 2 and given player was 2. Then the returned array[0,0] would be [0, 0, 1]
     # with the 1 representing that player 2 has taken that spot.
     def render_perspective(self, player):
-        onehot_board = np.zeros((self.width, self.height, self.player_num + 1), dtype=self.state.board.dtype)
+        onehot_board = np.zeros((self.width, self.height, self.num_players + 1), dtype=self.state.board.dtype)
 
         for i in range(self.width):
             for j in range(self.height):
@@ -174,11 +175,12 @@ class ConnectEnv():
 
         return onehot_board
 
+
 class ManualGame():
-    def __init__(self, width, height, connect_num, player_num, is_direct):
+    def __init__(self, width, height, connect_num, num_players, is_direct):
         self.game_board = Board(width, height, connect_num)
         self.is_direct = is_direct
-        self.player_num = player_num
+        self.num_players = num_players
     
     def get_move(self, current_player):
         if self.is_direct:
@@ -221,7 +223,7 @@ class ManualGame():
             return 0
 
     def play_round(self):
-        player_iter = range(1, self.player_num + 1)
+        player_iter = range(1, self.num_players + 1)
         self.display()
 
         turn_count = 1
