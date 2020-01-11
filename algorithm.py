@@ -1,11 +1,14 @@
 import torch
 import torch.nn as nn
+import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
 
 import random
 import math
 from collections import namedtuple
+from itertools import count
+
 
 from env import ConnectEnv
 
@@ -77,7 +80,40 @@ class Agent(object):
 
 # nice
 
-num_players = 2
+NUM_PLAYERS = 2
+WIDTH = 7
+HEIGHT = 6
+CONNECT_NUM = 4
+
+EPS_START = 1
+EPS_END = 0.01
+EPS_DECAY = 0.01
+MEMORY_CAPACITY = 100000
+LEARNING_RATE = 0.001
+
+EPISODES = 50
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+agent = Agent(EpsilonGreedy(EPS_START, EPS_END, EPS_DECAY), WIDTH, device)
+memory = ReplayMemory(MEMORY_CAPACITY)
+
+policy_net = DQN(WIDTH, HEIGHT, NUM_PLAYERS, WIDTH).to(device)
+target_net = DQN(WIDTH, HEIGHT, NUM_PLAYERS, WIDTH).to(device)
+
+target_net.load_state_dict(policy_net.state_dict())
+target_net.eval()
+
+optimizer = optim.Adam(params=policy_net.parameters(), lr=LEARNING_RATE)
+
+env = ConnectEnv(WIDTH, HEIGHT, CONNECT_NUM, NUM_PLAYERS)
+
+for episode in range(EPISODES):
+    env.reset()
+    for t in count():
+        pass
+
+
+
 print(torch.randn(4))
 print("test")
 print("test2")
