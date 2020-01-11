@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Board:
     delta_list = np.array(
         [[-1, 0], [-1, 1], [0, 1], [1, 1]]
@@ -104,11 +105,14 @@ class Board:
                 new_y += delta_y
         return 0
 
+
 class ConnectEnv():
     def __init__(self, width, height, connect_num, player_num):
         self.state = Board(width, height, connect_num)
         self.player_num = player_num
         self.current_player = 0
+        self.width = width
+        self.height = height
 
     def step(self, action):
         move_status = self.state.make_move(action, self.current_player)
@@ -135,7 +139,21 @@ class ConnectEnv():
 
     def reset(self):
         self.state.reset_board()
-        
+
+    def render_perspective(self, player):
+        onehot_board = np.zeros((self.width, self.height, self.player_num + 1), dtype=self.state.board.dtype)
+
+        for i in range(self.width):
+            for j in range(self.height):
+                occupied_state = self.state.board[i, j]
+                if occupied_state == player:
+                    occupied_state = 1
+                elif occupied_state == 1:
+                    occupied_state = player
+                onehot_board[i, j, occupied_state] = 1
+
+        return  onehot_board
+
 class ManualGame():
     def __init__(self, width, height, connect_num, player_num, is_direct):
         self.game_board = Board(width, height, connect_num)
