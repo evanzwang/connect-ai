@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
+print("ur a dum dum")
 class Net(nn.Module):
 
     def __init__(self):

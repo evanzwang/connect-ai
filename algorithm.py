@@ -97,7 +97,9 @@ EPS_DECAY = 0.01
 MEMORY_CAPACITY = 100000
 LEARNING_RATE = 0.001
 
+BATCH_SIZE = 128
 EPISODES = 50
+TARGET_UPDATE = 10
 
 # Initializes agent and memory
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -117,9 +119,35 @@ env = ConnectEnv(WIDTH, HEIGHT, CONNECT_NUM, NUM_PLAYERS)
 # Training processes
 for episode in range(EPISODES):
     env.reset()
+    current_player = env.current_player + 1
+    state = env.render_perspective(current_player)
     for t in count():
-        pass
+        action = agent.select_action(state)
+        _, reward, done, _ = env.step(action.item())
+        reward = torch.tensor([reward], device=device)
+        next_state = env.render_perspective(current_player)
 
+        state = next_state
+        memory.push(Experience(state, action, next_state, reward))
+
+        if len(memory) >= BATCH_SIZE:
+            experiences = memory.sample(BATCH_SIZE)
+            batch = Experience(*zip(*experiences))
+            states = torch.cat(batch.state)
+            actions = torch.cat(batch.action)
+            next_states = torch.cat(batch.next_state)
+            rewards = torch.cat(batch.reward)
+        # still need qvalue class
+
+        if done:
+            break
+
+        if episode % TARGET_UPDATE == 0:
+            target_net.load_state_dict(policy_net.state_dict())
+
+        current_player = env.current_player + 1
+
+print("Done")
 
 # Testing
 print(torch.randn(4))
