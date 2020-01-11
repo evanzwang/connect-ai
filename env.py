@@ -1,37 +1,44 @@
 import numpy as np
 
-
+# Represents the game board and contains several methods that can be run to play the game
 class Board:
     delta_list = np.array(
         [[-1, 0], [-1, 1], [0, 1], [1, 1]]
     )
 
+    # Initializes board with set width, height, and how many tiles need to be in a row to win
     def __init__(self, width, height, connect_num):
         self.width = width
         self.height = height
         self.connect_num = connect_num
         self.winner = 0
         self.board = np.zeros((width, height), dtype=np.int8)
-    
+
+    # Called on a player win and returns the winner (player number)
+    # I don't think this is used
     def on_win(self):
         winner = self.winner
         self.reset_board()
         return winner
-    
+
+    # I don't think this is used
     def on_lose(self):
         self.reset_board()
         return self.winner
 
+    # Resets the board to all zeros
     def reset_board(self):
         self.board = np.zeros((self.width, self.height), dtype=np.int8)
         self.winner = 0
-    
+
+    # Sets the board to a pre-existing board
     def set_board(self, new_board):
         self.board = new_board
         self.width = new_board.size[0]
         self.height = new_board.size[1]
-    
-    # returns -2 if all filled, -1 if the move cannot be made, 0 if the move was made, player # if the player won
+
+    # Makes a move with 5-in-a-row rules (without gravity), given an x and y index.
+    # Returns -2 if all filled, -1 if the move cannot be made, 0 if the move was made, player # if the player won
     def direct_place(self, x, y, player):
         if not (0 in self.board):
             return -2
@@ -42,7 +49,8 @@ class Board:
 
         return -1
 
-    # returns -2 if all filled, -1 if the move cannot be made, 0 if the move was made, player # if the player won
+    # Makes a move with Connect-4 move rules, given a position and player number.
+    # Returns -2 if all filled, -1 if the move cannot be made, 0 if the move was made, player # if the player won
     def make_move(self, pos, player):
         if not (0 in self.board):
             return -2
@@ -56,11 +64,13 @@ class Board:
                 current_row[i] = player
                 return self.is_connected(pos, i)
 
-    # returns 0 if no one won, player # if player won
+    # Checks if any player has won
+    # Returns 0 if no one won, player # if player won
     def is_connected(self, x, y):        
         player = self.board[x, y]
-        delta_x = 0
-        delta_y = 0
+        # delta_x = 0
+        # delta_y = 0
+
         # for x_change in range(-1, 2):
         #     for y_change in range(0, 2):
         #         delta_x = x_change
@@ -106,7 +116,10 @@ class Board:
         return 0
 
 
+# Represents the environment with simple methods to run it
+# Currently played in Connect-4 rules
 class ConnectEnv():
+    # Initializes environment with the width, height, number of tiles needed to be in-a-row, and the number of players
     def __init__(self, width, height, connect_num, player_num):
         self.state = Board(width, height, connect_num)
         self.player_num = player_num
@@ -114,8 +127,10 @@ class ConnectEnv():
         self.width = width
         self.height = height
 
+    # Takes the action given by the player and updates the environment
+    # Returns the state, reward, done, and info
     def step(self, action):
-        move_status = self.state.make_move(action, self.current_player)
+        move_status = self.state.make_move(action, self.current_player + 1)
         self.current_player = (self.current_player + 1) % self.player_num
 
         reward = 0
@@ -137,9 +152,14 @@ class ConnectEnv():
         
         return self.state.board, reward, done, info
 
+    # Resets the board
     def reset(self):
         self.state.reset_board()
+        self.current_player = 0
 
+    # Returns the given player's perspective of the board with one-hot encoding
+    # Say if board[0,0] was 2 and given player was 2. Then the returned array[0,0] would be [0, 0, 1]
+    # with the 1 representing that player 2 has taken that spot.
     def render_perspective(self, player):
         onehot_board = np.zeros((self.width, self.height, self.player_num + 1), dtype=self.state.board.dtype)
 
@@ -152,7 +172,7 @@ class ConnectEnv():
                     occupied_state = player
                 onehot_board[i, j, occupied_state] = 1
 
-        return  onehot_board
+        return onehot_board
 
 class ManualGame():
     def __init__(self, width, height, connect_num, player_num, is_direct):

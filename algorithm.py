@@ -13,10 +13,11 @@ from itertools import count
 from env import ConnectEnv
 
 
+# A deep nn that helps make decisions
 class DQN(nn.Module):
     def __init__(self, width, height, num_players, outputs):
         super(DQN, self).__init__()
-        self.fc1 = nn.Linear(in_features=width*height*(num_players+1), out_features=32)
+        self.fc1 = nn.Linear(in_features=width * height * (num_players + 1), out_features=32)
         self.fc2 = nn.Linear(in_features=32, out_features=48)
         self.out = nn.Linear(in_features=48, out_features=outputs)
 
@@ -28,46 +29,50 @@ class DQN(nn.Module):
         return tensor
 
 
+# Data structure in which the memories are stored
 Experience = namedtuple("Experience", ("state", "action", "next_state", "reward"))
 
 
+# Object storing multiple memories
 class ReplayMemory(object):
     def __init__(self, capacity):
         self.capacity = capacity
         self.index = 0
         self.memories = []
-    
+
     def push(self, experience):
         if len(self.memories) < self.capacity:
             self.memories.append(None)
-    
+
         self.memories[self.index] = experience
         self.index = (self.index + 1) % self.capacity
 
     def sample(self, num_samples):
         return random.sample(self.memories, num_samples)
-    
+
     def __len__(self):
         return len(self.memories)
 
 
+# Object representing a strategy for selecting actions
 class EpsilonGreedy(object):
     def __init__(self, start, end, decay):
         self.start = start
         self.end = end
         self.decay = decay
-        
+
     def curr_threshold(self, curr_step):
         return self.end + (self.start - self.end) * math.exp(-1 * curr_step / self.decay)
 
 
+# Agent representation
 class Agent(object):
     def __init__(self, strategy, num_actions, device):
         self.strategy = strategy
         self.num_actions = num_actions
         self.curr_step = 0
         self.device = device
-    
+
     def select_action(self, state, policy_net):
         threshold = self.strategy.curr_threshold(self.curr_step)
         self.curr_step += 1
@@ -80,6 +85,7 @@ class Agent(object):
 
 # nice
 
+# Hyper-parameters
 NUM_PLAYERS = 2
 WIDTH = 7
 HEIGHT = 6
@@ -93,6 +99,7 @@ LEARNING_RATE = 0.001
 
 EPISODES = 50
 
+# Initializes agent and memory
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 agent = Agent(EpsilonGreedy(EPS_START, EPS_END, EPS_DECAY), WIDTH, device)
 memory = ReplayMemory(MEMORY_CAPACITY)
@@ -107,13 +114,14 @@ optimizer = optim.Adam(params=policy_net.parameters(), lr=LEARNING_RATE)
 
 env = ConnectEnv(WIDTH, HEIGHT, CONNECT_NUM, NUM_PLAYERS)
 
+# Training processes
 for episode in range(EPISODES):
     env.reset()
     for t in count():
         pass
 
 
-
+# Testing
 print(torch.randn(4))
 print("test")
 print("test2")
