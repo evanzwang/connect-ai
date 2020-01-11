@@ -96,6 +96,7 @@ EPS_END = 0.01
 EPS_DECAY = 0.01
 MEMORY_CAPACITY = 100000
 LEARNING_RATE = 0.001
+GAMMA = 0.999
 
 BATCH_SIZE = 128
 EPISODES = 50
@@ -137,7 +138,20 @@ for episode in range(EPISODES):
             actions = torch.cat(batch.action)
             next_states = torch.cat(batch.next_state)
             rewards = torch.cat(batch.reward)
-        # still need qvalue class
+
+            curr_state_values = policy_net(states).gather(1, actions)
+            next_state_values = target_net(next_states).max(1)[0].detach()
+            expected_values = (next_state_values * GAMMA) + rewards
+
+            loss = F.mse_loss(curr_state_values, expected_values.unsqueeze(1))
+            optimizer.zero_grad()
+            loss.backward()
+
+            # May not be necessary
+            for param in policy_net.parameters():
+                param.grad.data.clamp_(-1, 1)
+
+            optimizer.step()
 
         if done:
             break
