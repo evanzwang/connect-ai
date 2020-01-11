@@ -121,12 +121,13 @@ class Board:
 # Currently played in Connect-4 rules
 class ConnectEnv():
     # Initializes environment with the width, height, number of tiles needed to be in-a-row, and the number of players
-    def __init__(self, width, height, connect_num, num_players):
+    def __init__(self, width, height, connect_num, num_players, reward_arr):
         self.state = Board(width, height, connect_num)
         self.num_players = num_players
         self.current_player = 0
         self.width = width
         self.height = height
+        self.rewards = reward_arr
 
     # Takes the action given by the player and updates the environment
     # Returns the state, reward, done, and info
@@ -138,16 +139,20 @@ class ConnectEnv():
         done = False
         info = ""
 
+        # Regular move
         if move_status == 0:
-            pass
+            reward = self.rewards[0]
+        # Winning move
         elif move_status > 0:            
-            reward = 10
+            reward = self.rewards[1]
             done = True
             self.reset()
+        # Illegal move
         elif move_status == -1:
-            reward = -1000
+            reward = self.rewards[2]
+        # Drawing move
         elif move_status == -2:
-            reward = 0
+            reward = self.rewards[3]
             done = True
             self.reset()
         
