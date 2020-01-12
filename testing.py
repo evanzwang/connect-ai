@@ -16,29 +16,18 @@ WIDTH = 7
 HEIGHT = 6
 CONNECT_NUM = 4
 
-EPS_START = 1
-EPS_END = 0.01
-EPS_DECAY = 640
-MEMORY_CAPACITY = 8192
-LEARNING_RATE = 0.001
-GAMMA = 0.999
-BATCH_SIZE = 256
-
-NUM_EPISODES = 4096
-TARGET_UPDATE = 12
-SWITCH_AGENT = 24
-USE_RANDOM_THRESH = 0.18
+NUM_EPISODES = 512
 REWARD_ARR = [0.0, 10000.0, -0.1, -0.1]
 FILE_PATH = "nn_models/episode_"
+FINAL_MODEL = 960
 
-WIN_RATE_HISTORY = 100
+WIN_RATE_HISTORY = 150
+
 # Initializes agent and memory
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 hyperparameters = {
-    "num_actions": NUM_ACTIONS, "device": device, "width": WIDTH, "height": HEIGHT,
-    "num_players": NUM_PLAYERS, "memory_capacity": MEMORY_CAPACITY, "batch_size": BATCH_SIZE, "gamma": GAMMA,
-    "learning_rate": LEARNING_RATE,
+    "num_actions": NUM_ACTIONS, "device": device, "width": WIDTH, "height": HEIGHT, "num_players": NUM_PLAYERS,
 }
 
 # set up matplotlib
@@ -70,18 +59,19 @@ def plot_wins(record):
 
 
 def main():
-    training_agent = Agent(
-        EpsilonGreedy(EPS_START, EPS_END, EPS_DECAY), **hyperparameters, is_learning=True
+    testing_agent = Agent(
+        EpsilonGreedy(0, 0, 1), **hyperparameters
     )
+    testing_agent.load_network(FILE_PATH + str(FINAL_MODEL) + ".pth")
 
     random_agent = Agent(EpsilonGreedy(1, 1, 1), **hyperparameters)
 
-    agents = [training_agent, random_agent]
+    agents = [testing_agent, random_agent]
 
     env = ConnectEnv(WIDTH, HEIGHT, CONNECT_NUM, NUM_PLAYERS, REWARD_ARR)
     record = []
 
-    # Training processes
+    # Testing
     for episode in range(1, NUM_EPISODES + 1):
         env.reset()
         current_player = env.current_player
@@ -93,15 +83,8 @@ def main():
 
             _, reward, done, _ = env.step(action.item())
 
-            if current_player == 0:
-                next_state = torch.from_numpy(env.render_perspective(0)).to(device).float()
-                reward_t = torch.tensor([reward], device=device)
-                training_agent.push_memory(Experience(state, action, next_state, reward_t))
-
-                training_agent.optimize()
-
             if done:
-                print(training_agent.strategy.curr_threshold(training_agent.curr_step))
+                print(testing_agent.strategy.curr_threshold(testing_agent.curr_step))
                 if reward == REWARD_ARR[1]:
                     won = 0.5
                 else:
@@ -115,25 +98,6 @@ def main():
                 break
 
             current_player = env.current_player
-
-        if episode % TARGET_UPDATE == 0:
-            training_agent.update_target_network()
-
-            switching_time = episode / (TARGET_UPDATE * SWITCH_AGENT)
-            if int(switching_time) == switching_time:
-
-                full_path = FILE_PATH + str(episode) + ".pth"
-                training_agent.save_network(full_path)
-
-                old_strat = EpsilonGreedy(USE_RANDOM_THRESH, 0, 1)
-                for i in range(1, len(agents)):
-                    agents[i] = Agent(old_strat, **hyperparameters)
-                    agents[i].load_network(full_path)
-
-                training_agent.reset_strategy()
-                training_agent.strategy = EpsilonGreedy(
-                    (EPS_START * (1 - USE_RANDOM_THRESH) ** (2.4 * switching_time)) + EPS_END, EPS_END, EPS_DECAY
-                )
 
     print("Done")
     plt.ioff()

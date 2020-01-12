@@ -30,7 +30,8 @@ class Agent(object):
 
     def select_action(self, state):
         threshold = self.strategy.curr_threshold(self.curr_step)
-        self.curr_step += 1
+        if self.is_learning:
+            self.curr_step += 1
         if threshold > random.random():
             return torch.tensor([random.randrange(self.num_actions)], dtype=torch.long).to(self.device)
         else:
@@ -67,6 +68,9 @@ class Agent(object):
 
     def update_target_network(self):
         self.target_net.load_state_dict(self.policy_net.state_dict())
+
+    def reset_strategy(self):
+        self.curr_step = 0
 
     def load_network(self, path):
         self.policy_net.load_state_dict(torch.load(path))
