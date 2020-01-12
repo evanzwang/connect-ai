@@ -1,4 +1,6 @@
 import torch
+import matplotlib
+import matplotlib.pyplot as plt
 
 from itertools import count
 
@@ -35,42 +37,85 @@ hyperparameters = {
     "learning_rate": LEARNING_RATE,
 }
 
-training_agent = Agent(
-    EpsilonGreedy(EPS_START, EPS_END, EPS_DECAY), hyperparameters, is_learning=True
-)
+# set up matplotlib
+is_ipython = 'inline' in matplotlib.get_backend()
+if is_ipython:
+    from IPython import display
 
-random_agent = Agent(EpsilonGreedy(1, 1, 1), hyperparameters)
-
-agents = [training_agent, random_agent]
-
-env = ConnectEnv(WIDTH, HEIGHT, CONNECT_NUM, NUM_PLAYERS, REWARD_ARR)
+plt.ion()
 
 
-# Training processes
-for episode in range(NUM_EPISODES):
-    env.reset()
-    current_player = env.current_player
-    state = env.render_perspective(current_player)
-    for t in count():
-        action = training_agent.select_action(state)
-        _, reward, done, _ = env.step(action.item())
-        reward = torch.tensor([reward], device=device)
-        next_state = env.render_perspective(current_player)
+def plot_wins(record):
+    plt.figure(2)
+    plt.clf()
+    record_t = torch.tensor(record, dtype=torch.float)
+    plt.title('Training...')
+    plt.xlabel('Episode')
+    plt.ylabel('Wins/Draws/Loses')
+    plt.plot(record_t.numpy())
+    # Take 100 episode averages and plot them too
+    if len(record_t) >= 100:
+        means = record_t.unfold(0, 100, 1).mean(1).view(-1)
+        means = torch.cat((torch.zeros(99), means))
+        plt.plot(means.numpy())
 
-        state = next_state
-        training_agent.push_memory(Experience(state, action, next_state, reward))
+    plt.pause(0.001)  # pause a bit so that plots are updated
+    if is_ipython:
+        display.clear_output(wait=True)
+        display.display(plt.gcf())
 
-        if done:
-            break
+
+def main():
+    training_agent = Agent(
+        EpsilonGreedy(EPS_START, EPS_END, EPS_DECAY), hyperparameters, is_learning=True
+    )
+
+    random_agent = Agent(EpsilonGreedy(1, 1, 1), hyperparameters)
+
+    agents = [training_agent, random_agent]
+
+    env = ConnectEnv(WIDTH, HEIGHT, CONNECT_NUM, NUM_PLAYERS, REWARD_ARR)
+    record = []
+
+    # Training processes
+    for episode in range(NUM_EPISODES):
+        env.reset()
+        current_player = env.current_player
+        state = env.render_perspective(current_player)
+        for t in count():
+            action = agents[current_player].select_action(state)
+
+            _, reward, done, _ = env.step(action.item())
+
+            reward_t = torch.tensor([reward], device=device)
+            next_state = env.render_perspective(current_player)
+
+            state = next_state
+            training_agent.push_memory(Experience(state, action, next_state, reward_t))
+
+            training_agent.optimize()
+
+            if done:
+                if reward == REWARD_ARR[1]:
+                    won = 0.5
+                else:
+                    won = 0
+                if current_player != 0:
+                    won *= -1
+                won += 0.5
+
+                record.append(won)
+                plot_wins(record)
+                break
+
+            current_player = env.current_player
 
         if episode % TARGET_UPDATE == 0:
-            target_net.load_state_dict(policy_net.state_dict())
+            training_agent.update_target_network()
 
-        current_player = env.current_player + 1
+    print("Done")
+    plt.ioff()
+    plt.show()
 
-print("Done")
 
-# Testing
-print(torch.randn(4))
-print("test")
-print("test2")
+main()
