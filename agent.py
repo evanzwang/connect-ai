@@ -31,8 +31,8 @@ class Agent(object):
     def select_action(self, state):
         threshold = self.strategy.curr_threshold(self.curr_step)
         self.curr_step += 1
-        if threshold < random.random():
-            return torch.tensor([random.randrange(self.num_actions)]).to(self.device)
+        if threshold > random.random():
+            return torch.tensor([random.randrange(self.num_actions)], dtype=torch.long).to(self.device)
         else:
             with torch.no_grad():
                 return self.policy_net(state).argmax(1).to(self.device)
@@ -48,7 +48,7 @@ class Agent(object):
         next_states = torch.cat(batch.next_state)
         rewards = torch.cat(batch.reward)
 
-        curr_state_values = self.policy_net(states).gather(1, actions)
+        curr_state_values = self.policy_net(states).gather(1, actions.view(-1, 1))
         next_state_values = self.target_net(next_states).max(1)[0].detach()
         expected_values = (next_state_values * self.gamma) + rewards
 

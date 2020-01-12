@@ -168,6 +168,7 @@ class ConnectEnv():
     # with the 1 representing that player 2 has taken that spot.
     def render_perspective(self, player):
         onehot_board = np.zeros((self.width, self.height, self.num_players + 1), dtype=self.state.board.dtype)
+        player += 1
 
         for i in range(self.width):
             for j in range(self.height):
@@ -176,6 +177,7 @@ class ConnectEnv():
                     occupied_state = 1
                 elif occupied_state == 1:
                     occupied_state = player
+
                 onehot_board[i, j, occupied_state] = 1
 
         return onehot_board

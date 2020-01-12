@@ -36,7 +36,9 @@ class Net(nn.Module):
 
 
 net = Net()
-bruh = torch.randn(1, 1, 32, 32)
+bruh = torch.randn(32, 32)
+bruh = bruh.view(bruh.size(0), -1)
+# bruh = bruh.view(tuple([-1].extend(list(bruh.shape))))
 out = net(bruh)
 print(out)
 print(out.argmax(1))
