@@ -96,7 +96,6 @@ def main():
                 training_agent.optimize()
 
             if done:
-                print(training_agent.strategy.curr_threshold(training_agent.curr_step))
                 if reward == REWARD_ARR[1]:
                     won = 0.5
                 else:
