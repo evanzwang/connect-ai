@@ -16,19 +16,19 @@ WIDTH = 7
 HEIGHT = 6
 CONNECT_NUM = 4
 
-EPS_START = 1
-EPS_END = 0.01
-EPS_DECAY = 640
-MEMORY_CAPACITY = 8192
+EPS_START = 0.96
+EPS_END = 0.008
+EPS_DECAY = 608
+MEMORY_CAPACITY = 16384
 LEARNING_RATE = 0.001
 GAMMA = 0.999
 BATCH_SIZE = 256
 
-NUM_EPISODES = 4096
+NUM_EPISODES = 2048
 TARGET_UPDATE = 12
 SWITCH_AGENT = 24
-USE_RANDOM_THRESH = 0.18
-REWARD_ARR = [0.0, 10000.0, -0.1, -0.1]
+USE_RANDOM_THRESH = 0.32
+REWARD_ARR = [0.0, 10000.0, -100.0, -0.1]
 FILE_PATH = "nn_models/episode_"
 
 WIN_RATE_HISTORY = 100
@@ -84,7 +84,9 @@ def main():
     # Training processes
     for episode in range(1, NUM_EPISODES + 1):
         env.reset()
-        current_player = env.current_player
+        current_player = random.randrange(0, NUM_PLAYERS) % NUM_PLAYERS
+        env.set_player(current_player)
+
         for _ in count():
             state = torch.from_numpy(env.render_perspective(current_player)).to(device).float()
 
@@ -132,7 +134,7 @@ def main():
 
                 training_agent.reset_strategy()
                 training_agent.strategy = EpsilonGreedy(
-                    (EPS_START * (1 - USE_RANDOM_THRESH) ** (2.4 * switching_time)) + EPS_END, EPS_END, EPS_DECAY
+                    (EPS_START * (1 - USE_RANDOM_THRESH) ** (1.6 * switching_time)) + EPS_END, EPS_END, EPS_DECAY
                 )
 
     print("Done")

@@ -163,6 +163,9 @@ class ConnectEnv():
         self.state.reset_board()
         self.current_player = 0
 
+    def set_player(self, player):
+        self.current_player = player
+
     # Returns the given player's perspective of the board with one-hot encoding
     # Say if board[0,0] was 2 and given player was 2. Then the returned array[0,0] would be [0, 0, 1]
     # with the 1 representing that player 2 has taken that spot.

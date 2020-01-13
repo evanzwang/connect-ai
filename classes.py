@@ -12,8 +12,8 @@ class DQN(nn.Module):
 
         self.input_num = width * height * (num_players + 1)
 
-        self.fc1 = nn.Linear(in_features=self.input_num, out_features=32)
-        self.fc2 = nn.Linear(in_features=32, out_features=48)
+        self.fc1 = nn.Linear(in_features=self.input_num, out_features=80)
+        self.fc2 = nn.Linear(in_features=80, out_features=48)
         self.out = nn.Linear(in_features=48, out_features=outputs)
 
     def forward(self, tensor):
