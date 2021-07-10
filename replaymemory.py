@@ -3,6 +3,7 @@ import random
 
 Experience = namedtuple("Experience", ("state", "action", "next_state", "reward"))
 
+
 class ReplayMemory(object):
     def __init__(self, capacity):
         self.capacity = capacity
