@@ -6,7 +6,7 @@ height: 19
 connect_num: 5
 num_players: 2
 
-learning_rate: 0.001
+learning_rate: 0.02
 l2_reg: 0.0001
 lr_decay_rate: 100
 
@@ -16,11 +16,12 @@ epochs_per_save: 10
 
 batch_size: 512
 max_memory: 1000000
+max_samples_per_train: 2048
 num_workers: 8
 random_replacement: False
 
 win_reward: 1
-mcst_steps: 100
+mcst_steps: 800
 c_puct: 1
 noise_alpha: 0.03
 noise_epsilon: 0.25

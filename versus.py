@@ -9,6 +9,28 @@ from mcst import MCST
 from env import BoardManager
 
 
+def play_random(model: nn.Module, device: torch.device, num_trials: int = 50, **kwargs):
+    model.eval()
+    bm = BoardManager(**kwargs)
+    nn_player = NNPlayer(1, bm, model, device, **kwargs)
+    rand_player = RandomPlayer(2, bm)
+    g = Game([nn_player, rand_player], **kwargs)
+
+    tot_wins = 0
+
+    for _ in range(num_trials):
+        g.reset_players()
+        g.scramble_players()
+        result = g.run_game()
+        if result == 1:
+            tot_wins += 2
+        elif result == 0:
+            tot_wins += 1
+
+    # Account for treating wins = 2, draw = 1
+    return tot_wins / (2 * num_trials)
+
+
 class Player(abc.ABC):
     @abc.abstractmethod
     def __init__(self, player: int, bm: BoardManager):
@@ -19,35 +41,42 @@ class Player(abc.ABC):
     def make_action(self, state: np.ndarray) -> int:
         pass
 
+    def reset(self):
+        pass
+
 
 class Game:
-    def __init__(self, players: list[Player], width: int, height: int, connect_num: int, is_direct: bool):
+    def __init__(self, players: list[Player], width: int, height: int, connect_num: int, is_direct: bool, **kwargs):
         self.players = players
         self.bm = BoardManager(width, height, connect_num, is_direct, len(players))
 
     def scramble_players(self):
         random.shuffle(self.players)
 
+    def reset_players(self):
+        for p in self.players:
+            p.reset()
+
     # Returns who won: player # or 0 if draw
     def run_game(self):
         board = self.bm.blank_board()
 
         while 1:
-            for i, p in enumerate(self.players, 1):
-                action = p.make_action(board, i)
-                board, win_status = self.bm.take_action(board, action, i)
+            for p in self.players:
+                action = p.make_action(board)
+                board, win_status = self.bm.take_action(board, action, p.player)
                 if win_status != 0:
                     return win_status if win_status > 0 else 0
 
 
 class NNPlayer(Player):
     def __init__(self, player: int, bm: BoardManager, model: nn.Module, device: torch.device, mcst_steps: int,
-                 c_puct: float = 1, noise_alpha: float = 0, noise_epsilon: float = 0,):
+                 c_puct: float = 1, **kwargs):
         super(NNPlayer, self).__init__(player, bm)
         self.model = model
         self.model.eval()
         self.steps = mcst_steps
-        self.tree = MCST(model, bm, c_puct, noise_alpha, noise_epsilon, device)
+        self.tree = MCST(model, bm, c_puct, 0, 0, device)
         self.bm = bm
 
     def reset(self):
