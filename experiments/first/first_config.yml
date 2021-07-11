@@ -21,7 +21,7 @@ num_workers: 8
 random_replacement: False
 
 win_reward: 1
-mcst_steps: 400
+mcst_steps: 200
 c_puct: 1
 noise_alpha: 0.03
 noise_epsilon: 0.25

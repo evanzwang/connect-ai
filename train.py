@@ -103,5 +103,5 @@ def main(config_path: str):
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    path = "experiments/first/first_config.yml"
+    path = "experiments/first_night/first_config.yml"
     main(path)
