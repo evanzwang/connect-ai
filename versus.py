@@ -9,7 +9,7 @@ from mcst import MCST
 from env import BoardManager
 
 
-def play_random(model: nn.Module, device: torch.device, num_trials: int = 50, **kwargs):
+def play_random(model: nn.Module, device: torch.device, num_trials: int = 10, **kwargs):
     model.eval()
     bm = BoardManager(**kwargs)
     nn_player = NNPlayer(1, bm, model, device, **kwargs)
@@ -76,7 +76,7 @@ class NNPlayer(Player):
         self.model = model
         self.model.eval()
         self.steps = mcst_steps
-        self.tree = MCST(model, bm, c_puct, 0, 0, device)
+        self.tree = MCST(model, bm, c_puct, 0.003, 0, device)
         self.bm = bm
 
     def reset(self):

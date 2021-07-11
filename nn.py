@@ -52,7 +52,7 @@ class ProbValNN(nn.Module):
         )
 
         resblock_list = []
-        for _ in range(19):
+        for _ in range(6):
             resblock_list.append(ResBlock(inner_channels, inner_channels))
         self.res_tower = nn.Sequential(*resblock_list)
 
