@@ -60,7 +60,7 @@ def train(config: dict, dir_path: str):
 
             a_prob = tree.action_probs(curr_board, curr_player, 1)
             new_data.append([curr_board, a_prob, curr_player])
-            print(f"{len(new_data)}", end=' ')
+            print(f"{len(new_data)}")
             action = np.random.choice(a_prob.size, p=a_prob)
 
             curr_board, win_status = bm.take_action(curr_board, action, curr_player)
@@ -81,7 +81,7 @@ def train(config: dict, dir_path: str):
             trained_samples = 0
             for batch in dl:
                 run_batch(batch, pvnn, optim)
-                trained_samples += batch.shape[0]
+                trained_samples += batch[0].shape[0]
                 if trained_samples >= config["max_samples_per_train"]:
                     break
             pvnn.eval()
@@ -103,5 +103,5 @@ def main(config_path: str):
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    path = "blank_config.yml"
+    path = "experiments/first_night/first_config.yml"
     main(path)

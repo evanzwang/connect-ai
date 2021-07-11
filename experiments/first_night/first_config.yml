@@ -1,0 +1,27 @@
+model_name: firstnight
+
+is_direct: True
+width: 19
+height: 19
+connect_num: 5
+num_players: 2
+
+learning_rate: 0.02
+l2_reg: 0.0001
+lr_decay_rate: 100
+
+num_epochs: 600
+games_per_batch: 20
+epochs_per_save: 40
+
+batch_size: 512
+max_memory: 1000000
+max_samples_per_train: 2048
+num_workers: 8
+random_replacement: False
+
+win_reward: 1
+mcst_steps: 400
+c_puct: 1
+noise_alpha: 0.03
+noise_epsilon: 0.25
