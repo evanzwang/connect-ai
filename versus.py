@@ -31,6 +31,19 @@ def play_random(model: nn.Module, device: torch.device, num_trials: int = 50, **
     return tot_wins / (2 * num_trials)
 
 
+def play_model_human(model: nn.Module, device: torch.device, **kwargs):
+    model.eval()
+    bm = BoardManager(**kwargs)
+    nn_player = NNPlayer(1, bm, model, device, **kwargs)
+    rand_player = HumanPlayer(2, bm)
+    g = Game([nn_player, rand_player], **kwargs)
+
+    g.reset_players()
+    g.scramble_players()
+    result = g.run_game()
+    print(f"Winner: {result}")
+
+
 class Player(abc.ABC):
     @abc.abstractmethod
     def __init__(self, player: int, bm: BoardManager):
