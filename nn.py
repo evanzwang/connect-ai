@@ -29,6 +29,41 @@ class ResBlock(nn.Module):
         return F.relu(x)
 
 
+class ResBlockBottle(nn.Module):
+    def __init__(self, in_channels: int, out_channels: int):
+        super(ResBlockBottle, self).__init__()
+        self.main_block = nn.Sequential(
+            nn.Conv2d(in_channels, in_channels, kernel_size=(1, 1), bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(in_channels, in_channels, kernel_size=(3, 3), padding=1, groups=in_channels, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(in_channels, out_channels, kernel_size=(1, 1), bias=False),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(out_channels, out_channels, kernel_size=(1, 1), bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(out_channels, out_channels, kernel_size=(3, 3), padding=1, groups=out_channels, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(out_channels, out_channels, kernel_size=(1, 1), bias=False),
+            nn.BatchNorm2d(out_channels),
+        )
+        self.downsample = None
+        if in_channels != out_channels:
+            self.downsample = nn.Sequential(
+                nn.Conv2d(in_channels, out_channels, kernel_size=(1, 1), bias=False),
+                nn.BatchNorm2d(out_channels)
+            )
+
+    def forward(self, x):
+        orig_x = x
+        x = self.main_block(x)
+        if self.downsample is not None:
+            orig_x = self.downsample(orig_x)
+        x += orig_x
+        return F.relu(x)
+
+
 class ProbValNN(nn.Module):
     def __init__(self, width: int, height: int, is_direct: bool, num_players: int,
                  inner_channels: int = 256, **kwargs):
@@ -52,8 +87,8 @@ class ProbValNN(nn.Module):
         )
 
         resblock_list = []
-        for _ in range(6):
-            resblock_list.append(ResBlock(inner_channels, inner_channels))
+        for _ in range(5):
+            resblock_list.append(ResBlockBottle(inner_channels, inner_channels))
         self.res_tower = nn.Sequential(*resblock_list)
 
         self.policy_head = nn.Sequential(

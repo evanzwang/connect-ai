@@ -1,8 +1,8 @@
 model_name: blank
 
 is_direct: True
-width: 19
-height: 19
+width: 10
+height: 10
 connect_num: 5
 num_players: 2
 
@@ -21,7 +21,7 @@ num_workers: 8
 random_replacement: False
 
 win_reward: 1
-mcst_steps: 800
+mcst_steps: 250
 c_puct: 1
 noise_alpha: 0.03
 noise_epsilon: 0.25
