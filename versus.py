@@ -31,6 +31,19 @@ def play_random(model: nn.Module, device: torch.device, num_trials: int = 10, **
     return tot_wins / (2 * num_trials)
 
 
+def play_model_human(model: nn.Module, device: torch.device, **kwargs):
+    model.eval()
+    bm = BoardManager(**kwargs)
+    nn_player = NNPlayer(1, bm, model, device, **kwargs)
+    rand_player = HumanPlayer(2, bm)
+    g = Game([nn_player, rand_player], **kwargs)
+
+    g.reset_players()
+    g.scramble_players()
+    result = g.run_game()
+    print(f"Winner: {result}")
+
+
 class Player(abc.ABC):
     @abc.abstractmethod
     def __init__(self, player: int, bm: BoardManager):
@@ -113,10 +126,14 @@ class HumanPlayer(Player):
                 if len(move_pos) != 2:
                     print("Please input again, there was a problem in your input.")
                     continue
-                if state[int(move_pos[0]), int(move_pos[1])] != 0:
+                if state[int(move_pos[0]), int(move_pos[1])] == 0:
                     return int(move_pos[0]) * self.bm.width + int(move_pos[1])
+                else:
+                    print("Move is invalid.")
         else:
             while 1:
                 move_pos = input("Player " + str(self.player) + ": Input move position: ").strip()
                 if state[0, int(move_pos)] == 0:
                     return int(move_pos)
+                else:
+                    print("Move is invalid.")
