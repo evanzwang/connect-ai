@@ -96,11 +96,10 @@ class NNPlayer(Player):
         self.tree.reset()
 
     def make_action(self, state: np.ndarray) -> int:
-        curr_state = self.bm.standard_perspective(state, self.player)
         for _ in range(self.steps):
-            self.tree.search(curr_state, self.player)
+            self.tree.search(state, self.player)
 
-        a_prob = self.tree.action_probs(curr_state, self.player, 0)
+        a_prob = self.tree.action_probs(state, self.player, 0)
         action = np.random.choice(a_prob.size, p=a_prob)
         return action
 

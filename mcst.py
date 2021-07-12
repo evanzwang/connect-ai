@@ -30,7 +30,8 @@ class MCST:
     def action_probs(self, state: np.ndarray, player: int, temperature: float) -> np.ndarray:
         action_counts = self.n_s_a[self.bm.standard_perspective(state, player).tobytes()]
         if temperature == 0:
-            action = np.random.choice(np.flatnonzero(action_counts == action_counts.max()))
+            valid_actions = action_counts * self.bm.valid_moves(state)
+            action = np.random.choice(np.flatnonzero(valid_actions == valid_actions.max()))
             prob = np.zeros(action_counts.size)
             prob[action] = 1
             return prob

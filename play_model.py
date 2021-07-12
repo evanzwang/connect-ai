@@ -20,12 +20,13 @@ def main(config_path: str):
     with open(config_path, "r") as yml:
         config = yaml.safe_load(yml)
     print("Starting play.")
-    play_model(config, os.path.dirname(config_path), 240)
+    play_model(config, os.path.dirname(config_path), epoch)
 
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    path = "experiments/first_night/first_config.yml"
+    path = "experiments/second_night/secondn.yml"
+    epoch = 200
     main(path)
 
 
