@@ -33,6 +33,8 @@ def run_batch(batch: list[torch.Tensor, torch.Tensor, torch.Tensor], pvnn: nn.Mo
 
 def train(config: dict, dir_path: str):
     pvnn = ProbValNN(**config).to(device=device)
+    if pretraining_weights is not None:
+        pvnn.load_state_dict(torch.load(pretraining_weights))
     pvnn.eval()
     bm = BoardManager(**config)
 
@@ -104,4 +106,5 @@ def main(config_path: str):
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     path = "experiments/second_night/secondn.yml"
+    pretraining_weights = "experiments/second_night/secondn_200.pth"
     main(path)
