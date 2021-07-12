@@ -126,10 +126,14 @@ class HumanPlayer(Player):
                 if len(move_pos) != 2:
                     print("Please input again, there was a problem in your input.")
                     continue
-                if state[int(move_pos[0]), int(move_pos[1])] != 0:
+                if state[int(move_pos[0]), int(move_pos[1])] == 0:
                     return int(move_pos[0]) * self.bm.width + int(move_pos[1])
+                else:
+                    print("Move is invalid.")
         else:
             while 1:
                 move_pos = input("Player " + str(self.player) + ": Input move position: ").strip()
                 if state[0, int(move_pos)] == 0:
                     return int(move_pos)
+                else:
+                    print("Move is invalid.")

@@ -11,7 +11,7 @@ from archive_util import load_model
 
 
 def play_model(config: dict, config_path: str, epoch_num: int):
-    pvnn = ProbValNN(**config)
+    pvnn = ProbValNN(**config).to(device=device)
     load_model(pvnn, epoch_num, config["model_name"], config_path)
     play_model_human(pvnn, device, **config)
 
@@ -19,13 +19,13 @@ def play_model(config: dict, config_path: str, epoch_num: int):
 def main(config_path: str):
     with open(config_path, "r") as yml:
         config = yaml.safe_load(yml)
-    print("Starting training.")
+    print("Starting play.")
     play_model(config, os.path.dirname(config_path), 240)
 
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    path = "blank_config.yml"
+    path = "experiments/first_night/first_config.yml"
     main(path)
 
 
