@@ -19,6 +19,8 @@ max_memory: 1000000
 max_samples_per_train: 2048
 num_workers: 8
 random_replacement: False
+restower_blocks: 6
+restower_bottle: True
 
 win_reward: 1
 mcst_steps: 250

@@ -41,8 +41,6 @@ class ResBlockBottle(nn.Module):
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
 
-            nn.Conv2d(out_channels, out_channels, kernel_size=(1, 1), bias=False),
-            nn.ReLU(inplace=True),
             nn.Conv2d(out_channels, out_channels, kernel_size=(3, 3), padding=1, groups=out_channels, bias=False),
             nn.ReLU(inplace=True),
             nn.Conv2d(out_channels, out_channels, kernel_size=(1, 1), bias=False),
