@@ -118,6 +118,6 @@ def main(config_path: str):
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    path = "experiments/third_night/thirdn.yml"
+    path = "experiments/fourth_night/fourthn.yml"
     pretraining_weights = "experiments/third_night/thirdn_2400.pth"
     main(path)
