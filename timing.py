@@ -56,7 +56,7 @@ if __name__ == "__main__":
     from dataset import MemoryDataset
     from torch.utils.data import DataLoader
 
-    mem_data = MemoryDataset(max_memory=10, random_replacement=False)
+    mem_data = MemoryDataset(max_memory=4, random_replacement=False)
     pee = DataLoader(mem_data, shuffle=True, pin_memory=True, batch_size=2, num_workers=8)
     mem_data.add((np.zeros((5, 5)), np.zeros(10), 1))
     mem_data.add((np.random.rand(5, 5), np.zeros(10), 1))

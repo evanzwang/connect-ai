@@ -1,0 +1,29 @@
+model_name: fifthn
+
+is_direct: True
+width: 10
+height: 10
+connect_num: 5
+num_players: 2
+
+learning_rate: 0.01
+l2_reg: 0.0001
+lr_decay_rate: 10000
+
+num_epochs: 2500
+games_per_batch: 10
+epochs_per_save: 500
+
+batch_size: 512
+max_memory: 62500
+max_samples_per_train: 1000000
+num_workers: 8
+random_replacement: False
+restower_blocks: 5
+restower_bottle: True
+
+win_reward: 1
+mcst_steps: 250
+c_puct: 1
+noise_alpha: 0.03
+noise_epsilon: 0.25
