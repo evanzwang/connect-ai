@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import torch
 from torch import nn
@@ -19,7 +21,8 @@ def compute_losses(pred: tuple[torch.Tensor, torch.Tensor], actual: tuple[torch.
     return ans.mean()
 
 
-def run_batch(batch: list[torch.Tensor, torch.Tensor, torch.Tensor], pvnn: nn.Module, optim: torch.optim.Optimizer):
+def run_batch(batch: list[torch.Tensor, torch.Tensor, torch.Tensor], pvnn: nn.Module, optim: torch.optim.Optimizer) \
+        -> float:
     input_state = batch[0].to(device=device).float()
     r_prob = batch[1].to(device=device)
     r_val = batch[2].to(device=device)
@@ -30,8 +33,12 @@ def run_batch(batch: list[torch.Tensor, torch.Tensor, torch.Tensor], pvnn: nn.Mo
     loss.backward()
     optim.step()
 
+    return loss.item()
+
 
 def train(config: dict, dir_path: str):
+    record_path = os.path.join(dir_path, config["model_name"] + "_record.txt")
+
     pvnn = ProbValNN(**config).to(device=device)
     if pretraining_weights is not None:
         pvnn.load_state_dict(torch.load(pretraining_weights))
@@ -42,7 +49,7 @@ def train(config: dict, dir_path: str):
     dl = DataLoader(mem_data, shuffle=True, pin_memory=True,
                     num_workers=config["num_workers"], batch_size=config["batch_size"])
     optim = torch.optim.Adam(pvnn.parameters(), lr=config["learning_rate"], weight_decay=config["l2_reg"])
-    scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, 0.1)
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, 0.45)
 
     print("Done setup.")
 
@@ -54,7 +61,6 @@ def train(config: dict, dir_path: str):
 
         new_data = []
 
-        print("Current move: ", end='')
         while 1:
             tree = MCST(pvnn, bm, device=device, **config)
             for _ in range(config["mcst_steps"]):
@@ -62,7 +68,6 @@ def train(config: dict, dir_path: str):
 
             a_prob = tree.action_probs(curr_board, curr_player, 1)
             new_data.append([curr_board, a_prob, curr_player])
-            print(f"{len(new_data)}")
             action = np.random.choice(a_prob.size, p=a_prob)
 
             curr_board, win_status = bm.take_action(curr_board, action, curr_player)
@@ -80,20 +85,28 @@ def train(config: dict, dir_path: str):
 
         if epoch_num % config["games_per_batch"] == 0 or epoch_num == 1:
             pvnn.train()
-            trained_samples = 0
+            trained_batches = 0
+            l_val = 0
             for batch in dl:
-                run_batch(batch, pvnn, optim)
-                trained_samples += batch[0].shape[0]
-                if trained_samples >= config["max_samples_per_train"]:
+                l_val += run_batch(batch, pvnn, optim)
+                trained_batches += 1
+                if trained_batches * config["batch_size"] >= config["max_samples_per_train"]:
                     break
             pvnn.eval()
+            update_stats(record_path, f"Epoch {epoch_num} Loss: {l_val / trained_batches}")
 
         if epoch_num % config["epochs_per_save"] == 0:
             save_model(pvnn, epoch_num, config["model_name"], dir_path)
             print(f"Playing random WR: {play_random(pvnn, device, **config)}")
+            update_stats(record_path, f"Epoch {epoch_num} Random WR: {play_random(pvnn, device, **config)}")
 
         if epoch_num % config["lr_decay_rate"]:
             scheduler.step()
+
+
+def update_stats(file_path: str, write_string: str):
+    with open(file_path, "a+") as f:
+        f.write(write_string + "\n")
 
 
 def main(config_path: str):
@@ -106,5 +119,5 @@ def main(config_path: str):
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     path = "experiments/third_night/thirdn.yml"
-    pretraining_weights = "experiments/second_night/secondredo_600.pth"
+    pretraining_weights = "experiments/third_night/thirdn_2400.pth"
     main(path)
