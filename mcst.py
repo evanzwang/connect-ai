@@ -6,6 +6,8 @@ from env import BoardManager
 
 
 class MCST:
+    LARGE_VAL = 1000
+
     def __init__(self, pvnn: nn.Module, bm: BoardManager, c_puct: float, noise_alpha: float, noise_epsilon: float,
                  device: torch.device, win_reward: float = 1, **kwargs):
         self.pvnn = pvnn
@@ -30,8 +32,7 @@ class MCST:
     def action_probs(self, state: np.ndarray, player: int, temperature: float) -> np.ndarray:
         action_counts = self.n_s_a[self.bm.standard_perspective(state, player).tobytes()]
         if temperature == 0:
-            valid_actions = action_counts * self.bm.valid_moves(state)
-            action = np.random.choice(np.flatnonzero(valid_actions == valid_actions.max()))
+            action = np.random.choice(np.flatnonzero(action_counts == action_counts.max()))
             prob = np.zeros(action_counts.size)
             prob[action] = 1
             return prob
@@ -59,12 +60,13 @@ class MCST:
             player_arr.append(player)
 
             noise = np.random.dirichlet([self.alpha] * prob.size) * self.eps
-            curr_prob = (prob + noise) * valid_moves
+            curr_prob = prob + noise
 
             puct = q_val_arr[-1] + self.c * curr_prob * np.sqrt(self.n_s[encoded_state]) / (n_val_arr[-1] + 1)
             self.n_s[encoded_state] += 1
 
-            chosen_action = puct.argmax()
+            chosen_action = (puct - ~valid_moves*self.LARGE_VAL).argmax()
+
             action_arr.append(chosen_action)
             state, win_status = self.bm.take_action(state, chosen_action, player)
 
@@ -84,14 +86,6 @@ class MCST:
                 prob, state_val = self.pvnn(nn_input)
             prob = prob[0].cpu().numpy()
             reward = state_val[0].cpu().numpy()
-            prob *= valid_moves
-            prob_sum = prob.sum()
-
-            if prob_sum == 0:
-                print("No valid moves. (hehe)")
-                prob = valid_moves / valid_moves.sum()
-            else:
-                prob /= prob_sum
 
             self.p_s_a[encoded_state] = prob
             self.n_s[encoded_state] = 0

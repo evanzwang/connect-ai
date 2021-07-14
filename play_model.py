@@ -25,8 +25,8 @@ def main(config_path: str):
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    path = "experiments/second_night/secondn.yml"
-    epoch = 200
+    path = "experiments/third_night/thirdn.yml"
+    epoch = 2400
     main(path)
 
 
