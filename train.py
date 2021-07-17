@@ -13,7 +13,7 @@ from dataset import MemoryDataset
 from env import BoardManager
 from mcst import MCST
 from nn import ProbValNN
-from versus import play_random
+from versus import play_random, play_baseline
 
 
 def compute_losses(pred: tuple[torch.Tensor, torch.Tensor], actual: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
@@ -37,7 +37,12 @@ def run_batch(batch: list[torch.Tensor, torch.Tensor, torch.Tensor], pvnn: nn.Mo
 
 
 def train(config: dict, dir_path: str):
+    versus_nn = ProbValNN(**versus_config).to(device=device)
+    load_model(versus_nn, versus_epoch, versus_config["model_name"], os.path.dirname(versus_path))
+    versus_nn.eval()
+
     record_path = os.path.join(dir_path, config["model_name"] + "_record.txt")
+    until_train = config.get("samples_before_train", 0)
 
     pvnn = ProbValNN(**config).to(device=device)
     if pretraining_weights is not None:
@@ -86,7 +91,7 @@ def train(config: dict, dir_path: str):
                     )
                 break
 
-        if epoch_num % config["games_per_batch"] == 0 or epoch_num == 1:
+        if epoch_num % config["games_per_batch"] == 0 and len(mem_data) >= until_train:
             pvnn.train()
             trained_batches = 0
             l_val = 0
@@ -99,9 +104,12 @@ def train(config: dict, dir_path: str):
             update_stats(record_path, f"Epoch {epoch_num} Loss: {l_val / trained_batches}")
 
         if epoch_num % config["epochs_per_save"] == 0:
-            save_model(pvnn, epoch_num, config["model_name"], dir_path)
-            print(f"Playing random WR: {play_random(pvnn, device, **config)}")
-            update_stats(record_path, f"Epoch {epoch_num} Random WR: {play_random(pvnn, device, **config)}")
+            if len(mem_data) >= until_train:
+                save_model(pvnn, epoch_num, config["model_name"], dir_path)
+
+            wr = play_baseline(pvnn, versus_nn, device, num_trials=15, **config)
+            print(f"Playing random WR: {wr}")
+            update_stats(record_path, f"Epoch {epoch_num} Base WR: {wr}")
 
         if epoch_num % config["lr_decay_rate"] == 0:
             scheduler.step()
@@ -121,6 +129,12 @@ def main(config_path: str):
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    path = "experiments/fifth_night/fifthn.yml"
-    pretraining_weights = "experiments/fourth_night/fourthn_2500.pth"
+    path = "experiments/seven/seven.yml"
+    pretraining_weights = "experiments/fifth_night/fifthredo_3000.pth"
+
+    versus_path = "experiments/fifth_night/fifthredo.yml"
+    versus_epoch = 3000
+    with open(versus_path, "r") as y:
+        versus_config = yaml.safe_load(y)
+
     main(path)

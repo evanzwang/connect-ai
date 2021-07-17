@@ -9,6 +9,28 @@ from mcst import MCST
 from env import BoardManager
 
 
+def play_baseline(model: nn.Module, baseline_m: nn.Module, device: torch.device, num_trials: int = 10, **kwargs):
+    model.eval()
+    bm = BoardManager(**kwargs)
+    nn_player = NNPlayer(1, bm, model, device, **kwargs)
+    base_player = NNPlayer(2, bm, baseline_m, device, **kwargs)
+    g = Game([nn_player, base_player], **kwargs)
+
+    tot_wins = 0
+
+    for _ in range(num_trials):
+        g.reset_players()
+        g.scramble_players()
+        result = g.run_game()
+        if result == 1:
+            tot_wins += 2
+        elif result == 0:
+            tot_wins += 1
+
+    # Account for treating wins = 2, draw = 1
+    return tot_wins / (2 * num_trials)
+
+
 def play_random(model: nn.Module, device: torch.device, num_trials: int = 10, **kwargs):
     model.eval()
     bm = BoardManager(**kwargs)

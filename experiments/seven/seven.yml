@@ -1,0 +1,30 @@
+model_name: seven
+
+is_direct: True
+width: 10
+height: 10
+connect_num: 5
+num_players: 2
+
+learning_rate: 0.01
+l2_reg: 0.0001
+lr_decay_rate: 10000
+
+num_epochs: 4500
+games_per_batch: 5
+epochs_per_save: 500
+samples_before_train: 60000
+
+batch_size: 512
+max_memory: 100000
+max_samples_per_train: 60000
+num_workers: 8
+random_replacement: False
+restower_blocks: 5
+restower_bottle: True
+
+win_reward: 1
+mcst_steps: 250
+c_puct: 1
+noise_alpha: 0.03
+noise_epsilon: 0.25
