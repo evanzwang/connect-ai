@@ -107,7 +107,7 @@ def train(config: dict, dir_path: str):
             if len(mem_data) >= until_train:
                 save_model(pvnn, epoch_num, config["model_name"], dir_path)
 
-            wr = play_baseline(pvnn, versus_nn, device, num_trials=15, **config)
+            wr = play_baseline(pvnn, versus_nn, device, config, versus_config, num_trials=15)
             print(f"Playing random WR: {wr}")
             update_stats(record_path, f"Epoch {epoch_num} Base WR: {wr}")
 
@@ -129,7 +129,7 @@ def main(config_path: str):
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    path = "experiments/eighth/eight.yml.yml"
+    path = "experiments/eighth/eight.yml"
     pretraining_weights = "experiments/seven/seven_4500.pth"
 
     versus_path = "experiments/fifth_night/fifthredo.yml"
