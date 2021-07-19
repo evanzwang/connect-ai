@@ -61,6 +61,7 @@ class MCST:
 
             noise = np.random.dirichlet([self.alpha] * prob.size) * self.eps
             curr_prob = prob + noise
+            curr_prob = curr_prob / curr_prob.sum()
 
             puct = q_val_arr[-1] + self.c * curr_prob * np.sqrt(self.n_s[encoded_state]) / (n_val_arr[-1] + 1)
             self.n_s[encoded_state] += 1
