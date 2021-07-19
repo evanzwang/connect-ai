@@ -9,12 +9,13 @@ from mcst import MCST
 from env import BoardManager
 
 
-def play_baseline(model: nn.Module, baseline_m: nn.Module, device: torch.device, num_trials: int = 10, **kwargs):
+def play_baseline(model: nn.Module, baseline_m: nn.Module, device: torch.device, train_dict: dict, vs_dict: dict,
+                  num_trials: int = 10):
     model.eval()
-    bm = BoardManager(**kwargs)
-    nn_player = NNPlayer(1, bm, model, device, **kwargs)
-    base_player = NNPlayer(2, bm, baseline_m, device, **kwargs)
-    g = Game([nn_player, base_player], **kwargs)
+    bm = BoardManager(**train_dict)
+    nn_player = NNPlayer(1, bm, model, device, **train_dict)
+    base_player = NNPlayer(2, bm, baseline_m, device, **vs_dict)
+    g = Game([nn_player, base_player], bm)
 
     tot_wins = 0
 
@@ -36,7 +37,7 @@ def play_random(model: nn.Module, device: torch.device, num_trials: int = 10, **
     bm = BoardManager(**kwargs)
     nn_player = NNPlayer(1, bm, model, device, **kwargs)
     rand_player = RandomPlayer(2, bm)
-    g = Game([nn_player, rand_player], **kwargs)
+    g = Game([nn_player, rand_player], bm)
 
     tot_wins = 0
 
@@ -58,7 +59,7 @@ def play_model_human(model: nn.Module, device: torch.device, **kwargs):
     bm = BoardManager(**kwargs)
     nn_player = NNPlayer(1, bm, model, device, **kwargs)
     rand_player = HumanPlayer(2, bm)
-    g = Game([nn_player, rand_player], **kwargs)
+    g = Game([nn_player, rand_player], bm)
 
     g.reset_players()
     g.scramble_players()
@@ -81,9 +82,9 @@ class Player(abc.ABC):
 
 
 class Game:
-    def __init__(self, players: list[Player], width: int, height: int, connect_num: int, is_direct: bool, **kwargs):
+    def __init__(self, players: list[Player], b_manager: BoardManager):
         self.players = players
-        self.bm = BoardManager(width, height, connect_num, is_direct, len(players))
+        self.bm = b_manager
 
     def scramble_players(self):
         random.shuffle(self.players)

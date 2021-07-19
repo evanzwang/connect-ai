@@ -54,7 +54,7 @@ def train(config: dict, dir_path: str):
     dl = DataLoader(mem_data, shuffle=True, pin_memory=True,
                     num_workers=config["num_workers"], batch_size=config["batch_size"])
     optim = torch.optim.Adam(pvnn.parameters(), lr=config["learning_rate"], weight_decay=config["l2_reg"])
-    scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, 0.45)
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, 0.3)
 
     print("Done setup.")
 
