@@ -65,7 +65,7 @@ def play_model_human(model: nn.Module, device: torch.device, **kwargs):
     g.scramble_players()
     result = g.run_game()
     print(f"Winner: {result}")
-
+    
 
 class Player(abc.ABC):
     @abc.abstractmethod
