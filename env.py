@@ -1,4 +1,17 @@
+import random
+
 import numpy as np
+
+
+def calc_equivalence(state: np.ndarray, equiv_num: int) -> np.ndarray:
+    # 0: orig, 1: flipped horizontal, 2: orig rot 90 deg, 3: flipped rot 90 deg, 4: orig rot 180 deg, etc (up to 7)
+    if equiv_num % 2:
+        state = np.fliplr(state)
+
+    for i in range(equiv_num // 2):
+        state = np.rot90(state)
+
+    return state
 
 
 class BoardManager:
@@ -12,6 +25,25 @@ class BoardManager:
         self.connect_num = connect_num
         self.is_direct = is_direct
         self.num_players = num_players
+        if not self.is_direct:
+            self.valid_equivs = [0, 1]
+        elif self.height != self.width:
+            self.valid_equivs = [0, 1, 4, 5]  # Combinations of horizontal flip and 180 deg rotation
+        else:
+            self.valid_equivs = [0, 1, 2, 3, 4, 5, 6, 7]
+        random.shuffle(self.valid_equivs)
+
+    def random_equivalence(self, state: np.ndarray) -> np.ndarray:
+        return calc_equivalence(state, np.random.choice(self.valid_equivs))
+
+    def all_equivalences(self, state: np.ndarray, probabilities: np.ndarray) -> list[tuple[np.ndarray, np.ndarray]]:
+        random.shuffle(self.valid_equivs)
+        equivs = []
+        for i in self.valid_equivs:
+            equiv_state = calc_equivalence(state, i)
+            equiv_prob = calc_equivalence(probabilities.reshape(self.height, self.width), i)
+            equivs.append((equiv_state, equiv_prob.reshape(self.height * self.width)))
+        return equivs
 
     def blank_board(self):
         return np.zeros((self.height, self.width), dtype=np.uint8)
@@ -326,8 +358,6 @@ def main():
     # roll_amount = 1 - 1
     # onehot_board[1:] = np.roll(onehot_board[1:], roll_amount, axis=0)
     # print("ONE PERSP", onehot_board)
-
-
 
     pass
 
