@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from env import BoardManager
+from env import BoardManager, calc_inv_equiv
 
 
 class MCST:
@@ -82,10 +82,12 @@ class MCST:
 
         if reward is None:
             with torch.no_grad():
-                nn_input = torch.from_numpy(self.bm.onehot_perspective(state, player))
-                nn_input = nn_input.to(device=self.device).unsqueeze(0).float()
+                nn_input, equiv = self.bm.random_equivalence(state)
+                nn_input = self.bm.onehot_perspective(nn_input, player)
+                nn_input = torch.from_numpy(nn_input).to(device=self.device).unsqueeze(0).float()
                 prob, state_val = self.pvnn(nn_input)
-            prob = prob[0].cpu().numpy()
+            prob = prob[0].cpu().numpy().reshape(self.bm.height, self.bm.width)
+            prob = calc_inv_equiv(prob, equiv).reshape(self.bm.height * self.bm.width)
             reward = state_val[0].cpu().numpy()
 
             self.p_s_a[encoded_state] = prob

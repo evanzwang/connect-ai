@@ -84,11 +84,14 @@ def train(config: dict, dir_path: str):
             if win_status:
                 reward = 0 if win_status == -2 else config["win_reward"]
                 for el in new_data:
-                    mem_data.add(
-                        (bm.onehot_perspective(el[0], el[2]),
-                         el[1],
-                         (-1) ** (el[2] != win_status) * reward)
-                    )
+                    relative_reward = (-1) ** (el[2] != win_status) * reward
+                    all_equivs = bm.all_equivalences(el[0], el[1])
+                    for equiv_state, equiv_prob in all_equivs:
+                        mem_data.add(
+                            (bm.onehot_perspective(equiv_state, el[2]),
+                             equiv_prob,
+                             relative_reward)
+                        )
                 break
 
         if epoch_num % config["games_per_batch"] == 0 and len(mem_data) >= until_train:
