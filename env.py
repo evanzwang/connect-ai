@@ -7,10 +7,13 @@ def calc_equivalence(state: np.ndarray, equiv_num: int) -> np.ndarray:
     # 0: orig, 1: flipped horizontal, 2: orig rot 90 deg, 3: flipped rot 90 deg, 4: orig rot 180 deg, etc (up to 7)
     if equiv_num % 2:
         state = np.fliplr(state)
+    return np.rot90(state, equiv_num // 2)
 
-    for i in range(equiv_num // 2):
-        state = np.rot90(state)
 
+def calc_inv_equiv(state: np.ndarray, equiv_num: int) -> np.ndarray:
+    state = np.rot90(state, -(equiv_num // 2))
+    if equiv_num % 2:
+        state = np.fliplr(state)
     return state
 
 
@@ -33,8 +36,9 @@ class BoardManager:
             self.valid_equivs = [0, 1, 2, 3, 4, 5, 6, 7]
         random.shuffle(self.valid_equivs)
 
-    def random_equivalence(self, state: np.ndarray) -> np.ndarray:
-        return calc_equivalence(state, np.random.choice(self.valid_equivs))
+    def random_equivalence(self, state: np.ndarray) -> tuple[np.ndarray, int]:
+        chosen = np.random.choice(self.valid_equivs)
+        return calc_equivalence(state, chosen), chosen
 
     def all_equivalences(self, state: np.ndarray, probabilities: np.ndarray) -> list[tuple[np.ndarray, np.ndarray]]:
         random.shuffle(self.valid_equivs)
