@@ -66,6 +66,66 @@ class ProbValNN(nn.Module):
     def __init__(self, width: int, height: int, is_direct: bool, num_players: int,
                  inner_channels: int = 256, **kwargs):
         super(ProbValNN, self).__init__()
+
+        if not is_direct:
+            raise NotImplementedError
+
+        tot_area = width * height
+        num_actions = tot_area
+
+        self.block1 = nn.Sequential(
+            nn.Conv2d(num_players, inner_channels, kernel_size=(5, 5), padding=2, bias=False),
+            nn.BatchNorm2d(inner_channels),
+            nn.ReLU(inplace=True),
+        )
+
+        resblock_list = []
+        for _ in range(4):
+            resblock_list.append(ResBlockBottle(inner_channels, inner_channels))
+        self.res_tower = nn.Sequential(
+            *resblock_list,
+            nn.Conv2d(inner_channels, inner_channels // 4, kernel_size=(3, 3), padding=1, bias=False),
+            nn.BatchNorm2d(inner_channels // 4),
+            nn.ReLU(inplace=True)
+        )
+
+        self.concat = nn.Sequential(
+            nn.Conv2d(inner_channels//4 + num_players, inner_channels//4, kernel_size=(5, 5), padding=2, bias=False),
+            nn.BatchNorm2d(inner_channels // 4),
+            nn.ReLU(inplace=True),
+        )
+
+        self.policy_head = nn.Sequential(
+            nn.Conv2d(inner_channels // 4, inner_channels // 8, kernel_size=(1, 1), bias=False),
+            nn.BatchNorm2d(inner_channels // 8),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(inner_channels // 8, 1, kernel_size=(1, 1), bias=False),
+            nn.BatchNorm2d(1),
+            nn.ReLU(inplace=True),
+            nn.Flatten(),
+        )
+
+        self.value_head = nn.Sequential(
+            nn.Conv2d(inner_channels // 4, 1, kernel_size=(1, 1), bias=False),
+            nn.BatchNorm2d(1),
+            nn.ReLU(inplace=True),
+            nn.Flatten(),
+            nn.Linear(tot_area, num_actions),
+            nn.ReLU(inplace=True),
+            nn.Linear(num_actions, 1),
+            nn.Tanh()
+        )
+
+    def forward(self, x):
+        features = self.res_tower(self.block1(x[:, 1:]))
+        concat_features = self.concat(torch.cat([features, x[:, 1:]], dim=1))
+        policy = self.policy_head(concat_features)
+        return policy / torch.sum(policy, 1, keepdim=True), self.value_head(concat_features)
+
+class ProbValNNOld(nn.Module):
+    def __init__(self, width: int, height: int, is_direct: bool, num_players: int,
+                 inner_channels: int = 256, **kwargs):
+        super(ProbValNNOld, self).__init__()
         # Probably want conv net i think, so it is like 19x19 with some convolutions
         # lol want to do resnet? lol could do u-net architecture thing
         # nah do convs then skip connection then FC layers, softmax

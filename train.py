@@ -12,7 +12,7 @@ from archive_util import *
 from dataset import MemoryDataset
 from env import BoardManager
 from mcst import MCST
-from nn import ProbValNN
+from nn import ProbValNN, ProbValNNOld
 from versus import play_random, play_baseline
 
 
@@ -37,7 +37,7 @@ def run_batch(batch: list[torch.Tensor, torch.Tensor, torch.Tensor], pvnn: nn.Mo
 
 
 def train(config: dict, dir_path: str):
-    versus_nn = ProbValNN(**versus_config).to(device=device)
+    versus_nn = ProbValNNOld(**versus_config).to(device=device)
     load_model(versus_nn, versus_epoch, versus_config["model_name"], os.path.dirname(versus_path))
     versus_nn.eval()
 
@@ -132,8 +132,8 @@ def main(config_path: str):
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    path = "experiments/ninth/nine.yml"
-    pretraining_weights = "experiments/eighth/eight_4500.pth"
+    path = "experiments/new_five/nfive.yml"
+    pretraining_weights = None
 
     versus_path = "experiments/fifth_night/fifthredo.yml"
     versus_epoch = 3000
