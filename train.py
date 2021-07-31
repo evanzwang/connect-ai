@@ -78,8 +78,8 @@ def train(config: dict, dir_path: str):
             curr_board, win_status = bm.take_action(curr_board, action, curr_player)
             curr_player = bm.next_player(curr_player)
 
-            if len(new_data) % 10 == 0:
-                print(len(new_data))
+            # if len(new_data) % 10 == 0:
+            print(len(new_data))
 
             if win_status:
                 reward = 0 if win_status == -2 else config["win_reward"]
