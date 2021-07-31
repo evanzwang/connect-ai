@@ -33,15 +33,9 @@ class MCST:
         self.n_s = {}
 
     def action_probs(self, state: np.ndarray, player: int, temperature: float) -> np.ndarray:
-        # fig, ax = plt.subplots(ncols=2, figsize=(14, 6))
-        # sns.heatmap(self.p_s_a[self.bm.standard_perspective(state, player).tobytes()].reshape(10, 10), ax=ax[0])
         action_counts = self.n_s_a[self.bm.standard_perspective(state, player).tobytes()]
-        # sns.heatmap(action_counts.reshape(self.bm.width, self.bm.height), ax=ax[1])
-        # plt.show()
-        # print("Current value (for player):", self.q_s_a[self.bm.standard_perspective(state, player).tobytes()].mean())
         if temperature == 0:
             action = np.random.choice(np.flatnonzero(action_counts == action_counts.max()))
-            # print("Q-value of chosen action:", self.q_s_a[self.bm.standard_perspective(state, player).tobytes()][action])
             prob = np.zeros(action_counts.size)
             prob[action] = 1
             return prob
