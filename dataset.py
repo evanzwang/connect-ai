@@ -1,12 +1,16 @@
 import numpy as np
-from torch.utils.data import Dataset
 import torch
+from torch.utils.data import Dataset
 
 import random
 
 
 class MemoryDataset(Dataset):
+    """
+    PyTorch Dataset to hold game memories of states and associated target values for training
+    """
     def __init__(self, max_memory: int, random_replacement: bool, **kwargs):
+        # Keeps the data as a list, in [board, action probabilities, state values]
         self.data = []
         self.curr_ind = 0
         self.max_size = max_memory
@@ -21,9 +25,11 @@ class MemoryDataset(Dataset):
         return self.data[idx]
 
     def add(self, item: tuple[np.ndarray, np.ndarray, float]):
+        # Fills out list until max size is reached
         if len(self.data) < self.max_size:
             self.data.append(item)
         else:
+            # Overrides past data in FIFO (queue) order, or randomly
             if not self.random_override:
                 self.data[self.curr_ind] = item
                 self.curr_ind = (self.curr_ind + 1) % self.max_size
