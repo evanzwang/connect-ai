@@ -1,6 +1,6 @@
-import random
-
 import numpy as np
+
+import random
 
 
 def calc_equivalence(state: np.ndarray, equiv_num: int) -> np.ndarray:
