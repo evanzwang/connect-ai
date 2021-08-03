@@ -26,12 +26,11 @@ def compute_losses(pred: tuple[torch.Tensor, torch.Tensor], actual: tuple[torch.
     return ans.mean()
 
 
-def run_batch(batch: list[torch.Tensor, torch.Tensor, torch.Tensor], pvnn: nn.Module, optim: torch.optim.Optimizer) \
-        -> float:
+def run_batch(batch: list[torch.Tensor], pvnn: nn.Module, optim: torch.optim.Optimizer) -> float:
     """
     Trains model on a batch
-    :param batch: The batch of data, as a list of board states, action probabilities, and state values
-    Dimension: [[batch_size, num_players+1, height, width], [batch_size, num_actions], [batch_size, 1]]
+    :param batch: The batch of data, as a list of board states, action probabilities, state values, and epoch number
+    Dimension: [[batch_size, num_players+1, height, width], [batch_size, num_actions], [batch_size, 1], [batch_size, 1]]
     :param pvnn: The NN object to be trained
     :param optim: The optimizer
     :return: The loss (as a float for recording purposes)
@@ -119,7 +118,8 @@ def train(config: dict, dir_path: str):
                         mem_data.add(
                             (bm.onehot_perspective(equiv_state, el[2]),
                              equiv_prob,
-                             relative_reward)
+                             relative_reward,
+                             epoch_num)
                         )
                 break
 
@@ -131,6 +131,7 @@ def train(config: dict, dir_path: str):
             for batch in dl:
                 l_val += run_batch(batch, pvnn, optim)
                 trained_batches += 1
+                print(f"Batch {trained_batches} epochs: {batch[3][:10]}")
                 # Runs only select number of training examples
                 if trained_batches * config["batch_size"] >= config["max_samples_per_train"]:
                     break

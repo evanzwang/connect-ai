@@ -10,7 +10,7 @@ class MemoryDataset(Dataset):
     PyTorch Dataset to hold game memories of states and associated target values for training
     """
     def __init__(self, max_memory: int, random_replacement: bool, **kwargs):
-        # Keeps the data as a list, in [board, action probabilities, state values]
+        # Keeps the data as a list, in [board, action probabilities, state values, epoch]
         self.data = []
         self.curr_ind = 0
         self.max_size = max_memory
@@ -19,12 +19,12 @@ class MemoryDataset(Dataset):
     def __len__(self) -> int:
         return max(len(self.data), 1)
 
-    def __getitem__(self, idx: int) -> tuple[np.ndarray, np.ndarray, float]:
+    def __getitem__(self, idx: int) -> tuple[np.ndarray, np.ndarray, float, int]:
         if self.__len__() == 1 and len(self.data) == 0:
             raise NotImplementedError
         return self.data[idx]
 
-    def add(self, item: tuple[np.ndarray, np.ndarray, float]):
+    def add(self, item: tuple[np.ndarray, np.ndarray, float, int]):
         # Fills out list until max size is reached
         if len(self.data) < self.max_size:
             self.data.append(item)

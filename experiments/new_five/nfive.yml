@@ -16,7 +16,7 @@ epochs_per_save: 500
 samples_before_train: 4000
 
 batch_size: 512
-max_memory: 20000
+max_memory: 18000
 max_samples_per_train: 4096
 num_workers: 8
 random_replacement: False
