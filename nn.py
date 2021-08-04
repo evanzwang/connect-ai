@@ -3,9 +3,6 @@ from torch import nn
 import torch.nn.functional as F
 
 
-epsilon = 1e-6
-
-
 class ResBlock(nn.Module):
     """
     ResNet block for use in the main portion of the NN
