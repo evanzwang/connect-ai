@@ -3,6 +3,9 @@ from torch import nn
 import torch.nn.functional as F
 
 
+epsilon = 1e-6
+
+
 class ResBlock(nn.Module):
     """
     ResNet block for use in the main portion of the NN
@@ -156,8 +159,8 @@ class ProbValNN(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(inner_channels // 8, 1, kernel_size=(1, 1), bias=False),
             nn.BatchNorm2d(1),
-            nn.ReLU(inplace=True),
             nn.Flatten(),
+            nn.Softmax(dim=1)
         )
 
         self.value_head = nn.Sequential(
@@ -173,10 +176,8 @@ class ProbValNN(nn.Module):
 
     def forward(self, x):
         # Discards channel 0, which holds information about whether a space is empty
-        features = self.res_tower(self.block1(x[:, 1:]))
-        concat_features = self.concat(torch.cat([features, x[:, 1:]], dim=1))
-        policy = self.policy_head(concat_features)
-        return policy / torch.sum(policy, 1, keepdim=True), self.value_head(concat_features)
+        concat_features = self.concat(torch.cat([self.res_tower(self.block1(x[:, 1:])), x[:, 1:]], dim=1))
+        return self.policy_head(concat_features), self.value_head(concat_features)
 
 
 class ProbValNNOld(nn.Module):
