@@ -119,7 +119,7 @@ class ProbValNN(nn.Module):
     The policy network no longer has any FC layers.
     """
     def __init__(self, width: int, height: int, is_direct: bool, num_players: int,
-                 inner_channels: int = 256, **kwargs):
+                 inner_channels: int = 256, restower_blocks: int = 4, **kwargs):
         super(ProbValNN, self).__init__()
 
         if not is_direct:
@@ -135,7 +135,7 @@ class ProbValNN(nn.Module):
         )
         # ResNet block tower
         resblock_list = []
-        for _ in range(4):
+        for _ in range(restower_blocks):
             resblock_list.append(ResBlockBottleBias(inner_channels, inner_channels))
         self.res_tower = nn.Sequential(
             *resblock_list,

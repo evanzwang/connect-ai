@@ -18,8 +18,8 @@ from versus import play_baseline, play_random
 def compute_losses(pred: tuple[torch.Tensor, torch.Tensor], actual: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
     """
     Computes MSE loss on the state values, and cross-entropy on the probabilities
-    :param pred: The predicted NN values, dimension ([batch_size, 1], [batch_size, num_actions])
-    :param actual: The target values, dimension ([batch_size, 1], [batch_size, num_actions])
+    :param pred: The predicted NN values, dimension ([batch_size, num_actions], [batch_size, 1])
+    :param actual: The target values, dimension ([batch_size, num_actions], [batch_size, 1])
     :return: The loss, as a 0-dimensional PyTorch tensor
     """
     ans = torch.square(actual[1] - pred[1]) - torch.sum(actual[0] * torch.log(pred[0]), dim=1)
@@ -76,7 +76,7 @@ def train(config: dict, dir_path: str):
     dl = DataLoader(mem_data, shuffle=True, pin_memory=True,
                     num_workers=config["num_workers"], batch_size=config["batch_size"])
     optim = torch.optim.Adam(pvnn.parameters(), lr=config["learning_rate"], weight_decay=config["l2_reg"])
-    scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, 0.5)
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, 0.65)
 
     print("Done setup.")
 
@@ -115,6 +115,9 @@ def train(config: dict, dir_path: str):
                     # Calculates all equivalences to augment data, and inserts them into the Dataset
                     all_equivs = bm.all_equivalences(el[0], el[1])
                     for equiv_state, equiv_prob in all_equivs:
+                        print(bm.onehot_perspective(equiv_state, el[2]))
+                        print(equiv_prob.reshape(10, 10))
+                        print(relative_reward)
                         mem_data.add(
                             (bm.onehot_perspective(equiv_state, el[2]),
                              equiv_prob,
@@ -171,7 +174,7 @@ def main(config_path: str):
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Config path
-    path = "experiments/new_five/nfive.yml"
+    path = "experiments/bigger/bigger.yml"
     # Set to a path with weights if model is building of previous weights
     pretraining_weights = None
 

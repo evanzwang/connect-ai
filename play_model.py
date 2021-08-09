@@ -19,6 +19,7 @@ def play_model(config: dict, config_path: str, epoch_num: int):
     """
     pvnn = ProbValNN(**config).to(device=device)
     load_model(pvnn, epoch_num, config["model_name"], config_path)
+    pvnn.eval()
     play_model_human(pvnn, device, **config)
 
 
@@ -33,6 +34,6 @@ def main(config_path: str):
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Change the below for different models
-    path = "experiments/ninth/nine.yml"
-    epoch = 5500
+    path = "experiments/new_five/nfive.yml"
+    epoch = 6000
     main(path)
