@@ -10,7 +10,7 @@ from mcst import MCST
 
 
 def play_baseline(model: nn.Module, baseline_m: nn.Module, device: torch.device, train_dict: dict, vs_dict: dict,
-                  num_trials: int = 10) -> float:
+                  num_trials: int = 10) -> tuple[float, float, float]:
     """
     Pits the current model vs a previous baseline model. Records the win rate of the current model over num_trials games
     :param model: The current NN model
@@ -19,7 +19,9 @@ def play_baseline(model: nn.Module, baseline_m: nn.Module, device: torch.device,
     :param train_dict: Config parameters for the current NN model
     :param vs_dict: Config parameters for the baseline NN model
     :param num_trials: The number of trials to measure win rate
-    :return: Average win percentage. 0 if the current lost, 1 if the current won. Draws are counted as 0.5
+    :return: Tuple of win percentages of the current model. First element is the win rate if the current moved first,
+    second is the win rate if the baseline model moved first. The third element is the overall win percentage.
+    0 if the current lost, 1 if the current won. Draws are counted as 0.5
     """
     model.eval()
     bm = BoardManager(**train_dict)
@@ -27,20 +29,34 @@ def play_baseline(model: nn.Module, baseline_m: nn.Module, device: torch.device,
     base_player = NNPlayer(2, bm, baseline_m, device, **vs_dict)
     g = Game([nn_player, base_player], bm)
 
-    tot_wins = 0
+    go_first = 0
+    tot_first = 0
+    go_second = 0
+    tot_second = 0
 
     for _ in range(num_trials):
         # Resets and scrambles order for fair play
         g.reset_players()
         g.scramble_players()
         result = g.run_game()
-        if result == 1:
-            tot_wins += 2
-        elif result == 0:
-            tot_wins += 1
+        # If Player 1, the current model started
+        if g.players[0].player == 1:
+            tot_first += 2
+            if result == 1:
+                go_first += 2
+            elif result == 0:
+                go_first += 1
+        elif g.players[0].player == 2:  # If Player 2, the baseline model started the move
+            tot_second += 2
+            if result == 1:
+                go_second += 2
+            elif result == 0:
+                go_second += 1
+        else:
+            print("This shouldn't happen.")
 
     # Account for treating wins = 2, draw = 1
-    return tot_wins / (2 * num_trials)
+    return go_first / tot_first, go_second / tot_second, (go_first + go_second) / (tot_first + tot_second)
 
 
 def play_random(model: nn.Module, device: torch.device, num_trials: int = 10, **kwargs) -> float:

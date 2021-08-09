@@ -115,9 +115,6 @@ def train(config: dict, dir_path: str):
                     # Calculates all equivalences to augment data, and inserts them into the Dataset
                     all_equivs = bm.all_equivalences(el[0], el[1])
                     for equiv_state, equiv_prob in all_equivs:
-                        print(bm.onehot_perspective(equiv_state, el[2]))
-                        print(equiv_prob.reshape(10, 10))
-                        print(relative_reward)
                         mem_data.add(
                             (bm.onehot_perspective(equiv_state, el[2]),
                              equiv_prob,
@@ -145,9 +142,11 @@ def train(config: dict, dir_path: str):
             if len(mem_data) >= until_train:
                 save_model(pvnn, epoch_num, config["model_name"], dir_path)
 
-            wr = play_baseline(pvnn, versus_nn, device, config, versus_config, num_trials=15)
+            fwr, swr, wr = play_baseline(pvnn, versus_nn, device, config, versus_config, num_trials=15)
             print(f"Playing random WR: {wr}")
-            update_stats(record_path, f"Epoch {epoch_num} Base WR: {wr}")
+            # Detailed WR in the record text file
+            update_stats(record_path, f"Epoch {epoch_num} First Move WR: {fwr} || Second Move WR: {swr}")
+            update_stats(record_path, f"Epoch {epoch_num} Base Overall WR: {wr}")
 
         if epoch_num % config["lr_decay_rate"] == 0:  # Updates LR
             scheduler.step()
