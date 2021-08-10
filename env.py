@@ -40,9 +40,9 @@ class BoardManager:
         [[-1, 0], [-1, 1], [0, 1], [1, 1]]
     )
 
-    def __init__(self, width: int, height: int, connect_num: int, is_direct: bool, num_players: int, **kwargs):
-        self.width = width
+    def __init__(self, height: int, width: int, connect_num: int, is_direct: bool, num_players: int, **kwargs):
         self.height = height
+        self.width = width
         self.connect_num = connect_num
         self.is_direct = is_direct
         self.num_players = num_players
@@ -192,7 +192,7 @@ class BoardManager:
         :return: NumPy array dimensions [num_players+1, height, width], with the first channel representing whether a
         space is empty. Each subsequent channel i represents whether a space is occupied by the i-th player next to move
         """
-        onehot_board = np.zeros((self.num_players + 1, self.width, self.height), dtype=bool)
+        onehot_board = np.zeros((self.num_players + 1, self.height, self.width), dtype=bool)
         np.put_along_axis(onehot_board, np.expand_dims(state, 0), True, axis=0)
 
         # Rolls the channel dimension to correspond to whoever is next to move

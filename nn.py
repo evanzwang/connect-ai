@@ -118,14 +118,14 @@ class ProbValNN(nn.Module):
     Separates out into a policy (probabilities) network and a value network, as before.
     The policy network no longer has any FC layers.
     """
-    def __init__(self, width: int, height: int, is_direct: bool, num_players: int,
+    def __init__(self, height: int, width: int, is_direct: bool, num_players: int,
                  inner_channels: int = 256, restower_blocks: int = 4, **kwargs):
         super(ProbValNN, self).__init__()
 
         if not is_direct:
             raise NotImplementedError
 
-        tot_area = width * height
+        tot_area = height * width
         num_actions = tot_area
         # First 5x5 convolution
         self.block1 = nn.Sequential(
@@ -183,13 +183,13 @@ class ProbValNNOld(nn.Module):
     Has a 3x3 convolution, then multiple ResNet blocks.
     Separates out into a policy (probabilities) network and a value network.
     """
-    def __init__(self, width: int, height: int, is_direct: bool, num_players: int,
+    def __init__(self, height: int, width: int, is_direct: bool, num_players: int,
                  inner_channels: int = 256, **kwargs):
         super(ProbValNNOld, self).__init__()
         if not is_direct:
             raise NotImplementedError
 
-        tot_area = width * height
+        tot_area = height * width
         num_actions = tot_area
 
         self.block1 = nn.Sequential(
