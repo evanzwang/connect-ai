@@ -1,4 +1,4 @@
-model_name: big
+model_name: big_r2
 
 is_direct: True
 width: 10
@@ -18,7 +18,7 @@ samples_before_train: 4000
 batch_size: 512
 max_memory: 6000
 max_samples_per_train: 4096
-num_workers: 8
+num_workers: 4
 random_replacement: False
 
 restower_blocks: 10
