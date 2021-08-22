@@ -22,7 +22,7 @@ def compute_losses(pred: tuple[torch.Tensor, torch.Tensor], actual: tuple[torch.
     :param actual: The target values, dimension ([batch_size, num_actions], [batch_size, 1])
     :return: The loss, as a 0-dimensional PyTorch tensor
     """
-    ans = torch.square(actual[1] - pred[1]) - torch.sum(actual[0] * torch.log(pred[0]), dim=1)
+    ans = torch.square(actual[1] - pred[1]) - torch.mean(actual[0] * torch.log(pred[0]), dim=1)
     return ans.mean()
 
 
@@ -118,7 +118,7 @@ def train(config: dict, dir_path: str):
                         mem_data.add(
                             (bm.onehot_perspective(equiv_state, el[2]),
                              equiv_prob,
-                             relative_reward,
+                             -1,  # relative_reward,
                              epoch_num)
                         )
                 break
