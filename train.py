@@ -118,7 +118,7 @@ def train(config: dict, dir_path: str):
                         mem_data.add(
                             (bm.onehot_perspective(equiv_state, el[2]),
                              equiv_prob,
-                             -1,  # relative_reward,
+                             relative_reward,
                              epoch_num)
                         )
                 break
