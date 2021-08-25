@@ -15,33 +15,37 @@ from nn import ProbValNN, ProbValNNOld
 from versus import play_baseline, play_random
 
 
-def compute_losses(pred: tuple[torch.Tensor, torch.Tensor], actual: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
+def compute_losses(pred: tuple[torch.Tensor, torch.Tensor], actual: tuple[torch.Tensor, torch.Tensor],
+                   val_weight: float = 0.04) -> torch.Tensor:
     """
     Computes MSE loss on the state values, and cross-entropy on the probabilities
     :param pred: The predicted NN values, dimension ([batch_size, num_actions], [batch_size, 1])
     :param actual: The target values, dimension ([batch_size, num_actions], [batch_size, 1])
+    :param val_weight: How much to weight the value loss
     :return: The loss, as a 0-dimensional PyTorch tensor
     """
-    ans = torch.square(actual[1] - pred[1]) - torch.mean(actual[0] * torch.log(pred[0]), dim=1)
+    ans = torch.square(actual[1] - pred[1]).reshape(-1) * val_weight - torch.mean(actual[0] * torch.log(pred[0]), dim=1)
     return ans.mean()
 
 
-def run_batch(batch: list[torch.Tensor], pvnn: nn.Module, optim: torch.optim.Optimizer) -> float:
+def run_batch(batch: list[torch.Tensor], pvnn: nn.Module, optim: torch.optim.Optimizer,
+              val_weight: float = 0.04) -> float:
     """
     Trains model on a batch
     :param batch: The batch of data, as a list of board states, action probabilities, state values, and epoch number
     Dimension: [[batch_size, num_players+1, height, width], [batch_size, num_actions], [batch_size, 1], [batch_size, 1]]
     :param pvnn: The NN object to be trained
     :param optim: The optimizer
+    :param val_weight: How much to weight the value loss
     :return: The loss (as a float for recording purposes)
     """
     # Separating out the batch
     input_state = batch[0].to(device=device).float()
     r_prob = batch[1].to(device=device)
-    r_val = batch[2].to(device=device)
+    r_val = batch[2].to(device=device).reshape(-1, 1)
 
     # Loss function to compare the NN predictions vs target values
-    loss = compute_losses(pvnn(input_state), (r_prob, r_val))
+    loss = compute_losses(pvnn(input_state), (r_prob, r_val), val_weight=val_weight)
     # Backpropagation
     optim.zero_grad()
     loss.backward()
@@ -77,6 +81,8 @@ def train(config: dict, dir_path: str):
                     num_workers=config["num_workers"], batch_size=config["batch_size"])
     optim = torch.optim.Adam(pvnn.parameters(), lr=config["learning_rate"], weight_decay=config["l2_reg"])
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, 0.65)
+
+    value_weight = config.get("value_weight", 0.04)
 
     print("Done setup.")
 
@@ -129,7 +135,7 @@ def train(config: dict, dir_path: str):
             l_val = 0
             # Trains network to predict "target" probabilities and state values
             for batch in dl:
-                l_val += run_batch(batch, pvnn, optim)
+                l_val += run_batch(batch, pvnn, optim, val_weight=value_weight)
                 trained_batches += 1
                 print(f"Batch {trained_batches} epochs: {batch[3][:10]}")
                 # Runs only select number of training examples
@@ -173,7 +179,7 @@ def main(config_path: str):
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Config path
-    path = "experiments/bigger/bigger.yml"
+    path = "experiments/fixed/fixed.yml"
     # Set to a path with weights if model is building of previous weights
     pretraining_weights = None
 
