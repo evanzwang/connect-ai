@@ -33,7 +33,7 @@ def run_batch(batch: list[torch.Tensor], pvnn: nn.Module, optim: torch.optim.Opt
     """
     Trains model on a batch
     :param batch: The batch of data, as a list of board states, action probabilities, state values, and epoch number
-    Dimension: [[batch_size, num_players+1, height, width], [batch_size, num_actions], [batch_size, 1], [batch_size, 1]]
+    Dimension: [[batch_size, num_players+1, height, width], [batch_size, num_actions], [batch_size], [batch_size, 1]]
     :param pvnn: The NN object to be trained
     :param optim: The optimizer
     :param val_weight: How much to weight the value loss
