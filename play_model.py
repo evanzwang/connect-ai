@@ -34,6 +34,6 @@ def main(config_path: str):
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Change the below for different models
-    path = "experiments/new_five/nfive.yml"
-    epoch = 6000
+    path = "experiments/fixed3/fixed3.yml"
+    epoch = 10000
     main(path)

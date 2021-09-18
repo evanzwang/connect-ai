@@ -27,7 +27,7 @@ def export_to_onnx(config: dict, config_path: str, epoch_num: int):
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Change the below for different models
-    path = "experiments/new_five/nfive.yml"
+    path = "experiments/fixed/fixed.yml"
     epoch = 6000
     with open(path, "r") as yml:
         config_dict = yaml.safe_load(yml)
