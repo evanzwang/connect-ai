@@ -24,7 +24,7 @@ def compute_losses(pred: tuple[torch.Tensor, torch.Tensor], actual: tuple[torch.
     :param val_weight: How much to weight the value loss
     :return: The loss, as a 0-dimensional PyTorch tensor
     """
-    ans = torch.square(actual[1] - pred[1]).reshape(-1) * val_weight - torch.mean(actual[0] * torch.log(pred[0]), dim=1)
+    ans = torch.square(actual[1] - pred[1]).reshape(-1) * val_weight * actual[0].shape[1] - torch.sum(actual[0] * torch.log(pred[0]), dim=1)
     return ans.mean()
 
 
@@ -179,9 +179,9 @@ def main(config_path: str):
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Config path
-    path = "experiments/fixed/fixed.yml"
+    path = "experiments/fixed3/fixed3.yml"
     # Set to a path with weights if model is building of previous weights
-    pretraining_weights = None
+    pretraining_weights = "experiments/fixed2/fixed2_5500.pth"
 
     # Baseline model to measure off
     versus_path = "experiments/fifth_night/fifthredo.yml"
