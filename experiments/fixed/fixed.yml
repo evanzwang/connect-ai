@@ -1,4 +1,4 @@
-model_name: fixed
+model_name: fixed_r2
 
 is_direct: True
 width: 10
@@ -6,7 +6,7 @@ height: 10
 connect_num: 5
 num_players: 2
 
-learning_rate: 0.01
+learning_rate: 0.001
 l2_reg: 0.0001
 value_weight: 0.04
 lr_decay_rate: 1500
