@@ -13,8 +13,12 @@ class SmallAZeroNN(nn.Module):
     def __init__(self, height: int, width: int, is_direct: bool, num_players: int,
                  inner_channels: int = 256, restower_blocks: int = 5, **kwargs):
         super(SmallAZeroNN, self).__init__()
+
+        tot_area = height * width
         if not is_direct:
-            raise NotImplementedError
+            num_actions = width
+        else:
+            num_actions = tot_area
 
         tot_area = height * width
         num_actions = tot_area

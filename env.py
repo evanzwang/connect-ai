@@ -70,16 +70,19 @@ class BoardManager:
         :param probabilities: The probabilities for each action, dimensions of [num_actions]
         :return: The list of all equivalences applied to the board state and probabilities
         """
-        if not self.is_direct:
-            raise NotImplementedError
+        if self.is_direct:
+            effective_height = self.height
+        else:
+            effective_height = 1
+
         # Shuffles the list for random ordering
         random.shuffle(self.valid_equivs)
         equivs = []
         for i in self.valid_equivs:
             equiv_state = calc_equivalence(state, i)
             # Reshapes 1D array into 2D for rotation and reflection
-            equiv_prob = calc_equivalence(probabilities.reshape(self.height, self.width), i)
-            equivs.append((equiv_state, equiv_prob.reshape(self.height * self.width)))
+            equiv_prob = calc_equivalence(probabilities.reshape(effective_height, self.width), i)
+            equivs.append((equiv_state, equiv_prob.reshape(effective_height * self.width)))
         return equivs
 
     def blank_board(self) -> np.ndarray:

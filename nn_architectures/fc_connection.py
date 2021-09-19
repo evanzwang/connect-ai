@@ -18,7 +18,6 @@ class FCConnectionsNN(nn.Module):
         super(FCConnectionsNN, self).__init__()
 
         tot_area = height * width
-
         if not is_direct:
             num_actions = width
         else:

@@ -17,11 +17,12 @@ class ConvSkipNN(nn.Module):
                  inner_channels: int = 256, restower_blocks: int = 4, **kwargs):
         super(ConvSkipNN, self).__init__()
 
-        if not is_direct:
-            raise NotImplementedError
-
         tot_area = height * width
-        num_actions = tot_area
+        if not is_direct:
+            num_actions = width
+        else:
+            num_actions = tot_area
+
         # First 5x5 convolution
         self.block1 = nn.Sequential(
             nn.Conv2d(num_players, inner_channels, kernel_size=(5, 5), padding=2, bias=False),
