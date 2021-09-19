@@ -4,7 +4,7 @@ import yaml
 import os
 
 from archive_util import load_model
-from nn import ProbValNN
+from select_nn import get_nn
 
 
 def export_to_onnx(config: dict, config_path: str, epoch_num: int):
@@ -16,7 +16,7 @@ def export_to_onnx(config: dict, config_path: str, epoch_num: int):
     """
     dummy_input = torch.randn((1, config["num_players"] + 1, config["height"], config["width"]),
                               dtype=torch.float, device=device)
-    pvnn = ProbValNN(**config).to(device=device)
+    pvnn = get_nn(config).to(device=device)
     load_model(pvnn, epoch_num, config["model_name"], config_path)
     pvnn.eval()
 

@@ -6,7 +6,7 @@ import yaml
 import os
 
 from archive_util import load_model
-from nn import ProbValNN
+from select_nn import get_nn
 from versus import play_model_human
 
 
@@ -17,7 +17,7 @@ def play_model(config: dict, config_path: str, epoch_num: int):
     :param config_path: Path to the config directory (used to access NN weights)
     :param epoch_num: Epoch number to select
     """
-    pvnn = ProbValNN(**config).to(device=device)
+    pvnn = get_nn(config).to(device=device)
     load_model(pvnn, epoch_num, config["model_name"], config_path)
     pvnn.eval()
     play_model_human(pvnn, device, **config)

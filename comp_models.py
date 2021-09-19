@@ -7,7 +7,7 @@ import math
 import os
 
 from archive_util import load_model
-from nn import ProbValNN, ProbValNNOld
+from select_nn import get_nn
 from versus import play_baseline
 
 
@@ -18,11 +18,11 @@ def pit_models(config: dict, num_trials: int = 100):
     :param config: Dictionary with all the config parameters of the selected NN
     :param num_trials: Int specifying how many games to run
     """
-    pvnn = ProbValNN(**config).to(device=device)
+    pvnn = get_nn(config).to(device=device)
     load_model(pvnn, epoch, config["model_name"], os.path.dirname(path))
     pvnn.eval()
 
-    versus_nn = ProbValNNOld(**versus_config).to(device=device)
+    versus_nn = get_nn(versus_config).to(device=device)
     load_model(versus_nn, versus_epoch, versus_config["model_name"], os.path.dirname(versus_path))
     versus_nn.eval()
 

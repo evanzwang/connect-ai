@@ -11,7 +11,7 @@ from archive_util import *
 from dataset import MemoryDataset
 from env import BoardManager
 from mcst import MCST
-from nn import ProbValNN, ProbValNNOld
+from select_nn import get_nn
 from versus import play_baseline, play_random
 
 
@@ -24,7 +24,8 @@ def compute_losses(pred: tuple[torch.Tensor, torch.Tensor], actual: tuple[torch.
     :param val_weight: How much to weight the value loss
     :return: The loss, as a 0-dimensional PyTorch tensor
     """
-    ans = torch.square(actual[1] - pred[1]).reshape(-1) * val_weight * actual[0].shape[1] - torch.sum(actual[0] * torch.log(pred[0]), dim=1)
+    ans = torch.square(actual[1] - pred[1]).reshape(-1) * val_weight * actual[0].shape[1] \
+        - torch.sum(actual[0] * torch.log(pred[0]), dim=1)
     return ans.mean()
 
 
@@ -61,7 +62,7 @@ def train(config: dict, dir_path: str):
     :param dir_path: The config directory (for saving models and record file)
     """
     # Initializing baseline NN
-    versus_nn = ProbValNNOld(**versus_config).to(device=device)
+    versus_nn = get_nn(versus_config).to(device=device)
     load_model(versus_nn, versus_epoch, versus_config["model_name"], os.path.dirname(versus_path))
     versus_nn.eval()
 
@@ -69,7 +70,7 @@ def train(config: dict, dir_path: str):
     until_train = config.get("samples_before_train", 0)
 
     # Initializing training NN
-    pvnn = ProbValNN(**config).to(device=device)
+    pvnn = get_nn(config).to(device=device)
     if pretraining_weights is not None:
         pvnn.load_state_dict(torch.load(pretraining_weights))
     pvnn.eval()
