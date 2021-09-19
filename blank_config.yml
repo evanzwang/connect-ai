@@ -6,24 +6,29 @@ height: 10
 connect_num: 5
 num_players: 2
 
-learning_rate: 0.02
+learning_rate: 0.001
 l2_reg: 0.0001
-lr_decay_rate: 100
+value_weight: 0.04
+lr_decay_rate: 10000
 
-num_epochs: 100
+num_epochs: 10000
 games_per_batch: 10
-epochs_per_save: 10
+epochs_per_save: 500
+samples_before_train: 4000
 
 batch_size: 512
-max_memory: 1000000
-max_samples_per_train: 2048
-num_workers: 8
+max_memory: 9000
+max_samples_per_train: 4096
+num_workers: 4
 random_replacement: False
-restower_blocks: 6
+
+nn_type: FCConnectionsNN
+restower_blocks: 7
 restower_bottle: True
+restower_first_width: 5
 
 win_reward: 1
-mcst_steps: 250
+mcst_steps: 270
 c_puct: 1
 noise_alpha: 0.03
-noise_epsilon: 0.25
+noise_epsilon: 0.30
