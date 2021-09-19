@@ -17,7 +17,7 @@ def get_nn(config: dict) -> nn.Module:
             print("NN Type not available.")
             raise NotImplementedError
     else:  # Accommodating for older config files without "nn_type" key
-        is_res_tower = config.get("res_tower", True)
+        is_res_tower = config.get("restower", True)
         if is_res_tower:
             return SmallAZeroNN(**config)
         else:

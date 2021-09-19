@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from blocks import ResBlockBottle
+from nn_architectures.blocks import ResBlockBottle
 
 
 class SmallAZeroNN(nn.Module):

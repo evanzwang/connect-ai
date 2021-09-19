@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from blocks import ResBlockBottleBias
+from nn_architectures.blocks import ResBlockBottleBias
 
 
 class FCConnectionsNN(nn.Module):
