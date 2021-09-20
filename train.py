@@ -180,13 +180,13 @@ def main(config_path: str):
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Config path
-    path = "experiments/fixed3/fixed3.yml"
+    path = "experiments/fc/fc.yml"
     # Set to a path with weights if model is building of previous weights
-    pretraining_weights = "experiments/fixed2/fixed2_5500.pth"
+    pretraining_weights = None
 
     # Baseline model to measure off
-    versus_path = "experiments/fifth_night/fifthredo.yml"
-    versus_epoch = 3000
+    versus_path = "experiments/fixed3/fixed3.yml"
+    versus_epoch = 10000
     with open(versus_path, "r") as y:
         versus_config = yaml.safe_load(y)
 
